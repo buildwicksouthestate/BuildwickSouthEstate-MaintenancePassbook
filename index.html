@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Building Passbook</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Lora:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #EFEEE8;
+    --card: #FFFFFF;
+    --rule: #DEDBD1;
+    --ink: #1E2A28;
+    --ink-soft: #5B665F;
+    --surplus: #3F7D58;
+    --deficit: #B5453B;
+    --pocket: #C2822F;
+    --serif: 'Lora', serif;
+    --sans: 'Inter', sans-serif;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--sans);
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 720px; margin: 0 auto; padding: 32px 20px 80px; }
+
+  header.top {
+    display: flex; justify-content: space-between; align-items: baseline;
+    margin-bottom: 28px;
+  }
+  header.top h1 {
+    font-family: var(--serif); font-size: 22px; font-weight: 600; margin: 0;
+  }
+  header.top span { font-size: 13px; color: var(--ink-soft); }
+
+  .passbook {
+    background: var(--card); border: 1px solid var(--rule); border-radius: 4px;
+    padding: 28px 24px; margin-bottom: 24px;
+  }
+  .passbook .label { font-size: 13px; color: var(--ink-soft); margin-bottom: 6px; }
+  .passbook .balance {
+    font-family: var(--serif); font-size: 44px; font-weight: 700; line-height: 1;
+    font-variant-numeric: tabular-nums;
+  }
+  .passbook .balance.deficit { color: var(--deficit); }
+  .passbook .balance.surplus { color: var(--surplus); }
+  .passbook .sub-row {
+    display: flex; gap: 28px; margin-top: 18px; padding-top: 18px;
+    border-top: 1px solid var(--rule);
+  }
+  .passbook .sub-row div .label { margin-bottom: 4px; }
+  .passbook .sub-row div .val {
+    font-size: 17px; font-weight: 600; font-variant-numeric: tabular-nums;
+  }
+
+  .reimbursement-banner {
+    background: #FBF3E7; border: 1px solid #E9CFA0; border-radius: 4px;
+    padding: 12px 16px; margin-bottom: 24px; font-size: 13.5px; color: #7A5219;
+  }
+  .reimbursement-banner strong { color: var(--pocket); }
+
+  .month-block {
+    border: 1px solid var(--rule); border-radius: 4px; margin-bottom: 14px;
+    background: var(--card); overflow: hidden;
+  }
+  .month-header {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 16px 20px; cursor: pointer; user-select: none;
+  }
+  .month-header .m-name { font-family: var(--serif); font-size: 17px; font-weight: 600; }
+  .month-header .m-figs { display: flex; gap: 22px; font-size: 13px; }
+  .month-header .m-figs .amt { font-weight: 600; font-variant-numeric: tabular-nums; }
+  .month-header .chev { color: var(--ink-soft); font-size: 12px; margin-left: 12px; transition: transform .15s; }
+  .month-block.open .chev { transform: rotate(90deg); }
+
+  .month-body { display: none; border-top: 1px solid var(--rule); padding: 18px 20px 20px; }
+  .month-block.open .month-body { display: block; }
+
+  .section-label {
+    font-size: 12px; text-transform: uppercase; letter-spacing: .04em;
+    color: var(--ink-soft); margin: 18px 0 8px;
+  }
+  .section-label:first-child { margin-top: 0; }
+
+  .unit-grid {
+    display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px;
+  }
+  .unit-chip {
+    border: 1px solid var(--rule); border-radius: 3px; padding: 6px 4px;
+    text-align: center; font-size: 11.5px;
+  }
+  .unit-chip .u-no { font-weight: 600; display: block; }
+  .unit-chip.paid { background: #F1F7F3; border-color: #CFE3D6; }
+  .unit-chip.unpaid { background: #FBF0EE; border-color: #EBC9C3; }
+  .unit-chip.partial { background: #FDF6EA; border-color: #EEDCB0; }
+
+  table.exp-table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+  table.exp-table td { padding: 7px 0; border-bottom: 1px solid var(--rule); vertical-align: top; }
+  table.exp-table td:last-child { text-align: right; font-variant-numeric: tabular-nums; font-weight: 500; white-space: nowrap; }
+  table.exp-table .cat { color: var(--ink-soft); font-size: 11.5px; display: block; }
+  table.exp-table a { color: var(--ink-soft); font-size: 11.5px; }
+  .pocket-tag {
+    display: inline-block; font-size: 10.5px; color: var(--pocket);
+    border: 1px solid #E9CFA0; border-radius: 20px; padding: 1px 7px; margin-left: 6px;
+  }
+
+  .empty { text-align: center; color: var(--ink-soft); padding: 60px 20px; font-size: 14px; }
+  .config-note {
+    font-size: 12px; color: var(--ink-soft); background: #fff; border: 1px dashed var(--rule);
+    padding: 10px 14px; border-radius: 4px; margin-bottom: 20px;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <h1 id="buildingName">Building Passbook</h1>
+    <span id="asOf"></span>
+  </header>
+
+  <div id="configNote" class="config-note" style="display:none;">
+    Set <code>API_URL</code> at the top of the script to your deployed Apps Script /exec URL to connect this to your sheet.
+  </div>
+
+  <div id="content">
+    <div class="empty">Loading…</div>
+  </div>
+</div>
+
+<script>
+// ── SET THIS to your deployed Apps Script Web App URL ──
+const API_URL = "PASTE_YOUR_APPS_SCRIPT_WEB_APP_URL_HERE";
+
+const fmt = n => '₹' + Number(n || 0).toLocaleString('en-IN', { maximumFractionDigits: 0 });
+const monthName = m => {
+  if (!m) return '';
+  const [y, mo] = m.split('-');
+  return new Date(y, mo - 1).toLocaleDateString('en-IN', { month: 'long', year: 'numeric' });
+};
+
+async function load() {
+  if (!API_URL || API_URL.startsWith('PASTE_')) {
+    document.getElementById('configNote').style.display = 'block';
+    renderDemo();
+    return;
+  }
+  try {
+    const res = await fetch(API_URL + '?action=dashboard');
+    const data = await res.json();
+    if (data.error) throw new Error(data.error);
+    render(data);
+  } catch (err) {
+    document.getElementById('content').innerHTML =
+      `<div class="empty">Couldn't load data: ${err.message}</div>`;
+  }
+}
+
+function render(data) {
+  document.getElementById('buildingName').textContent = data.buildingName || 'Building Passbook';
+  document.getElementById('asOf').textContent = new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+
+  const balance = data.cumulativeBalance;
+  const balClass = balance < 0 ? 'deficit' : 'surplus';
+  let html = `
+    <div class="passbook">
+      <div class="label">${balance < 0 ? 'Deficit' : 'Surplus'} (all-time)</div>
+      <div class="balance ${balClass}">${fmt(Math.abs(balance))}</div>
+      <div class="sub-row">
+        <div><div class="label">Total collected</div><div class="val">${fmt(data.totalCollected)}</div></div>
+        <div><div class="label">Total spent</div><div class="val">${fmt(data.totalExpenses)}</div></div>
+      </div>
+    </div>`;
+
+  if (data.pendingReimbursements && data.pendingReimbursements.length) {
+    const total = data.pendingReimbursements.reduce((s, r) => s + Number(r.Amount || 0), 0);
+    html += `<div class="reimbursement-banner"><strong>${fmt(total)}</strong> owed back to residents who paid building expenses out of pocket — see months below for detail.</div>`;
+  }
+
+  if (!data.monthly || !data.monthly.length) {
+    html += `<div class="empty">No months recorded yet.</div>`;
+  } else {
+    data.monthly.forEach((m, idx) => {
+      const surplusClass = m.surplus < 0 ? 'deficit' : 'surplus';
+      html += `
+      <div class="month-block ${idx === 0 ? 'open' : ''}" data-idx="${idx}">
+        <div class="month-header" onclick="toggleMonth(${idx})">
+          <div class="m-name">${monthName(m.month)}</div>
+          <div style="display:flex;align-items:center;">
+            <div class="m-figs">
+              <div>Collected <span class="amt">${fmt(m.collected)}</span></div>
+              <div>Spent <span class="amt">${fmt(m.spent)}</span></div>
+              <div style="color:var(--${surplusClass})">${m.surplus < 0 ? 'Deficit' : 'Surplus'} <span class="amt">${fmt(Math.abs(m.surplus))}</span></div>
+            </div>
+            <span class="chev">▶</span>
+          </div>
+        </div>
+        <div class="month-body">
+          <div class="section-label">Unit payment status</div>
+          <div class="unit-grid">
+            ${m.unitStatus.map(u => `
+              <div class="unit-chip ${u.status.toLowerCase()}">
+                <span class="u-no">${u.unit}</span>${u.status}
+              </div>`).join('')}
+          </div>
+          <div class="section-label">Spends</div>
+          ${m.expenses.length ? `
+          <table class="exp-table">
+            ${m.expenses.map(x => `
+              <tr>
+                <td>${x.Description}<span class="cat">${x.Category}${x.PaidFrom && x.PaidFrom !== 'Fund' ? `<span class="pocket-tag">Paid by ${x.PaidFrom}${x.ReimbursementStatus === 'Settled' ? ' · settled' : ' · pending'}</span>` : ''}</span>
+                ${x.InvoiceLink ? `<a href="${x.InvoiceLink}" target="_blank">View invoice ↗</a>` : ''}</td>
+                <td>${fmt(x.Amount)}</td>
+              </tr>`).join('')}
+          </table>` : `<div style="color:var(--ink-soft);font-size:13px;">No spends recorded.</div>`}
+        </div>
+      </div>`;
+    });
+  }
+
+  document.getElementById('content').innerHTML = html;
+}
+
+function toggleMonth(idx) {
+  const el = document.querySelector(`.month-block[data-idx="${idx}"]`);
+  el.classList.toggle('open');
+}
+
+function renderDemo() {
+  render({
+    buildingName: 'My Residency (demo data)',
+    totalCollected: 148000, totalExpenses: 132500, cumulativeBalance: 15500,
+    pendingReimbursements: [{ Amount: 1200 }],
+    monthly: [
+      {
+        month: '2026-08', due: 50000, collected: 46000, spent: 41200, surplus: 4800,
+        unitStatus: [
+          { unit: '1A', due: 2000, paid: 2000, status: 'Paid' },
+          { unit: '1B', due: 2000, paid: 0, status: 'Unpaid' },
+          { unit: '1C', due: 2000, paid: 1000, status: 'Partial' },
+          { unit: '1D', due: 2000, paid: 2000, status: 'Paid' },
+          { unit: '1E', due: 2000, paid: 2000, status: 'Paid' }
+        ],
+        expenses: [
+          { Description: 'Lift AMC', Category: 'Maintenance contract', Amount: 8000, PaidFrom: 'Fund', InvoiceLink: '' },
+          { Description: 'Common area bulbs', Category: 'Electrical', Amount: 1200, PaidFrom: 'Ramesh (2B)', InvoiceLink: '', ReimbursementStatus: 'Pending' },
+          { Description: 'Water tank cleaning', Category: 'Housekeeping', Amount: 3500, PaidFrom: 'Fund', InvoiceLink: '' }
+        ]
+      }
+    ]
+  });
+}
+
+load();
+</script>
+</body>
+</html>
