@@ -7,255 +7,94 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Lora:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --paper: #EFEEE8;
-    --card: #FFFFFF;
-    --rule: #DEDBD1;
-    --ink: #1E2A28;
-    --ink-soft: #5B665F;
-    --surplus: #3F7D58;
-    --deficit: #B5453B;
-    --pocket: #C2822F;
-    --serif: 'Lora', serif;
-    --sans: 'Inter', sans-serif;
-  }
-  * { box-sizing: border-box; }
-  body {
-    margin: 0;
-    background: var(--paper);
-    color: var(--ink);
-    font-family: var(--sans);
-    -webkit-font-smoothing: antialiased;
-  }
-  .wrap { max-width: 720px; margin: 0 auto; padding: 32px 20px 80px; }
-
-  header.top {
-    display: flex; justify-content: space-between; align-items: baseline;
-    margin-bottom: 28px;
-  }
-  header.top h1 {
-    font-family: var(--serif); font-size: 22px; font-weight: 600; margin: 0;
-  }
-  header.top span { font-size: 13px; color: var(--ink-soft); }
-
-  .passbook {
-    background: var(--card); border: 1px solid var(--rule); border-radius: 4px;
-    padding: 28px 24px; margin-bottom: 24px;
-  }
-  .passbook .label { font-size: 13px; color: var(--ink-soft); margin-bottom: 6px; }
-  .passbook .balance {
-    font-family: var(--serif); font-size: 44px; font-weight: 700; line-height: 1;
-    font-variant-numeric: tabular-nums;
-  }
-  .passbook .balance.deficit { color: var(--deficit); }
-  .passbook .balance.surplus { color: var(--surplus); }
-  .passbook .sub-row {
-    display: flex; gap: 28px; margin-top: 18px; padding-top: 18px;
-    border-top: 1px solid var(--rule);
-  }
-  .passbook .sub-row div .label { margin-bottom: 4px; }
-  .passbook .sub-row div .val {
-    font-size: 17px; font-weight: 600; font-variant-numeric: tabular-nums;
-  }
-
-  .reimbursement-banner {
-    background: #FBF3E7; border: 1px solid #E9CFA0; border-radius: 4px;
-    padding: 12px 16px; margin-bottom: 24px; font-size: 13.5px; color: #7A5219;
-  }
-  .reimbursement-banner strong { color: var(--pocket); }
-
-  .month-block {
-    border: 1px solid var(--rule); border-radius: 4px; margin-bottom: 14px;
-    background: var(--card); overflow: hidden;
-  }
-  .month-header {
-    display: flex; justify-content: space-between; align-items: center;
-    padding: 16px 20px; cursor: pointer; user-select: none;
-  }
-  .month-header .m-name { font-family: var(--serif); font-size: 17px; font-weight: 600; }
-  .month-header .m-figs { display: flex; gap: 22px; font-size: 13px; }
-  .month-header .m-figs .amt { font-weight: 600; font-variant-numeric: tabular-nums; }
-  .month-header .chev { color: var(--ink-soft); font-size: 12px; margin-left: 12px; transition: transform .15s; }
-  .month-block.open .chev { transform: rotate(90deg); }
-
-  .month-body { display: none; border-top: 1px solid var(--rule); padding: 18px 20px 20px; }
-  .month-block.open .month-body { display: block; }
-
-  .section-label {
-    font-size: 12px; text-transform: uppercase; letter-spacing: .04em;
-    color: var(--ink-soft); margin: 18px 0 8px;
-  }
-  .section-label:first-child { margin-top: 0; }
-
-  .unit-grid {
-    display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px;
-  }
-  .unit-chip {
-    border: 1px solid var(--rule); border-radius: 3px; padding: 6px 4px;
-    text-align: center; font-size: 11.5px;
-  }
-  .unit-chip .u-no { font-weight: 600; display: block; }
-  .unit-chip.paid { background: #F1F7F3; border-color: #CFE3D6; }
-  .unit-chip.unpaid { background: #FBF0EE; border-color: #EBC9C3; }
-  .unit-chip.partial { background: #FDF6EA; border-color: #EEDCB0; }
-
-  table.exp-table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
-  table.exp-table td { padding: 7px 0; border-bottom: 1px solid var(--rule); vertical-align: top; }
-  table.exp-table td:last-child { text-align: right; font-variant-numeric: tabular-nums; font-weight: 500; white-space: nowrap; }
-  table.exp-table .cat { color: var(--ink-soft); font-size: 11.5px; display: block; }
-  table.exp-table a { color: var(--ink-soft); font-size: 11.5px; }
-  .pocket-tag {
-    display: inline-block; font-size: 10.5px; color: var(--pocket);
-    border: 1px solid #E9CFA0; border-radius: 20px; padding: 1px 7px; margin-left: 6px;
-  }
-
-  .empty { text-align: center; color: var(--ink-soft); padding: 60px 20px; font-size: 14px; }
-  .config-note {
-    font-size: 12px; color: var(--ink-soft); background: #fff; border: 1px dashed var(--rule);
-    padding: 10px 14px; border-radius: 4px; margin-bottom: 20px;
-  }
+:root{
+  --bg:#f4f1ff;--surface:#fff;--ink:#18202f;--muted:#697386;--line:#e4e0ef;
+  --blue:#4263eb;--purple:#8b5cf6;--green:#16a34a;--red:#ef4444;
+  --green-bg:#e9f9ef;--red-bg:#fff0f0;--purple-bg:#f1eaff;
+  --orange:#f59e0b;--shadow:0 12px 35px rgba(57,42,120,.10);
+  --serif:'Lora',serif;--sans:'Inter',sans-serif
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;font-family:var(--sans);color:var(--ink);
+background:radial-gradient(circle at 8% 0%,#e8e2ff 0,transparent 28%),
+radial-gradient(circle at 100% 10%,#dff8ff 0,transparent 25%),var(--bg)}
+body{padding:24px}
+.app-shell{max-width:1280px;margin:auto;display:grid;grid-template-columns:270px 1fr;gap:20px;align-items:start}
+.sidebar,.main-card{background:rgba(255,255,255,.92);border:1px solid var(--line);box-shadow:var(--shadow);border-radius:20px}
+.sidebar{position:sticky;top:24px;padding:20px;max-height:calc(100vh - 48px);overflow:auto}
+.brand{display:flex;align-items:center;gap:11px;margin-bottom:22px}
+.brand-mark{width:40px;height:40px;border-radius:13px;background:linear-gradient(135deg,var(--blue),var(--purple));
+color:white;display:grid;place-items:center;font-weight:800;font-size:18px;box-shadow:0 8px 18px rgba(66,99,235,.25)}
+.brand h1{font-family:var(--serif);font-size:18px;margin:0}.brand small{display:block;color:var(--muted);font-size:11px;margin-top:2px}
+.side-title{font-size:11px;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);font-weight:800;margin:10px 0}
+.year{margin-bottom:10px}.year-head{width:100%;border:0;background:#f5f3ff;color:var(--ink);padding:11px 12px;border-radius:12px;
+display:flex;justify-content:space-between;align-items:center;font-weight:800;cursor:pointer}.year-head .arrow{transition:.2s}
+.year.collapsed .arrow{transform:rotate(-90deg)}.months{padding:7px 0 0 8px}.year.collapsed .months{display:none}
+.month-btn{width:100%;display:flex;align-items:center;justify-content:space-between;border:0;background:transparent;text-align:left;
+padding:10px 11px;border-radius:10px;color:#596273;cursor:pointer;font-size:13px}.month-btn:hover{background:#f1efff;color:var(--blue)}
+.month-btn.active{background:linear-gradient(90deg,#e9e7ff,#f3edff);color:#4935b9;font-weight:800;box-shadow:inset 3px 0 #7c5cff}
+.month-btn .mini-total{font-size:10px;color:var(--muted);font-weight:600}
+.main-card{padding:26px}.topbar{display:flex;justify-content:space-between;align-items:flex-start;gap:20px;margin-bottom:22px}
+.topbar h2{font-family:var(--serif);font-size:27px;margin:0 0 5px}.topbar p{margin:0;color:var(--muted);font-size:13px}.asof{font-size:11px;color:var(--muted);white-space:nowrap}
+.summary{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px}
+.stat{border-radius:15px;padding:16px 17px;border:1px solid var(--line);position:relative;overflow:hidden}
+.stat .label{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:800}
+.stat .value{font-size:22px;font-weight:800;margin-top:5px}.stat.collected{background:linear-gradient(135deg,#eafff0,#f6fff9)}
+.stat.spent{background:linear-gradient(135deg,#fff7e8,#fffaf3)}.stat.balance{background:linear-gradient(135deg,#eeeaff,#f8f4ff)}
+.legend{display:flex;gap:15px;flex-wrap:wrap;align-items:center;margin:4px 0 14px;font-size:11px;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:6px}.dot{width:10px;height:10px;border-radius:3px;display:inline-block}
+.dot.green{background:var(--green)}.dot.red{background:var(--red)}.dot.purple{background:var(--purple)}
+.unit-heading{display:flex;justify-content:space-between;align-items:end;margin:18px 0 10px}.unit-heading h3{margin:0;font-size:15px}
+.unit-heading small{color:var(--muted);font-size:11px}
+.unit-grid{display:grid;grid-template-columns:repeat(5,minmax(105px,1fr));gap:10px}
+.unit-card{border:2px solid transparent;border-radius:14px;padding:12px;min-height:96px;position:relative;
+transition:transform .15s,box-shadow .15s;box-shadow:0 4px 12px rgba(30,32,60,.06)}
+.unit-card:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(30,32,60,.10)}
+.unit-card.paid{background:var(--green-bg);border-color:#8ce0aa}.unit-card.pending{background:var(--red-bg);border-color:#ffaaa7}
+.unit-card.reimburse{background:var(--purple-bg);border-color:#c4a7ff}
+.unit-no{font-weight:800;font-size:16px}.status-pill{float:right;font-size:9px;text-transform:uppercase;letter-spacing:.05em;
+font-weight:800;padding:4px 6px;border-radius:99px;background:rgba(255,255,255,.72)}
+.unit-card.paid .status-pill{color:#08752f}.unit-card.pending .status-pill{color:#b42318}.unit-card.reimburse .status-pill{color:#6333c5}
+.unit-amount{font-size:15px;font-weight:800;margin-top:13px}.unit-due{font-size:10px;color:var(--muted);margin-top:3px}
+.reimburse-note{font-size:10px;color:#6333c5;margin-top:5px;font-weight:700}
+.section-label{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:800;margin:28px 0 9px}
+.expenses{border:1px solid var(--line);border-radius:14px;overflow:hidden;background:#fff}
+.expense-row{display:grid;grid-template-columns:1fr auto;gap:15px;padding:12px 14px;border-bottom:1px solid var(--line);font-size:13px}
+.expense-row:last-child{border-bottom:0}.expense-main{font-weight:700}.expense-main .cat{display:block;font-size:10px;color:var(--muted);font-weight:500;margin-top:3px}
+.expense-amount{font-weight:800;white-space:nowrap}.tag{display:inline-block;margin-left:6px;padding:2px 6px;border-radius:99px;font-size:9px;background:#f0e9ff;color:#663bc3}
+.invoice{font-size:10px;color:var(--blue);display:inline-block;margin-top:4px}.empty{padding:45px 15px;text-align:center;color:var(--muted);font-size:13px}
+.reimbursement-banner{padding:13px 15px;border-radius:14px;background:linear-gradient(90deg,#f0eaff,#fff);
+border:1px solid #d4c1ff;color:#5e3bb4;font-size:12px;margin-bottom:18px}.reimbursement-banner strong{font-size:15px}
+.config-note{padding:10px 12px;background:#fff8e8;border:1px solid #f4d58e;border-radius:10px;font-size:11px;color:#805d17;margin-bottom:15px}
+@media(max-width:900px){body{padding:12px}.app-shell{grid-template-columns:1fr}.sidebar{position:relative;top:auto;max-height:none}.unit-grid{grid-template-columns:repeat(4,minmax(100px,1fr))}}
+@media(max-width:620px){.main-card{padding:18px}.summary{grid-template-columns:1fr}.unit-grid{grid-template-columns:repeat(2,1fr)}
+.topbar{display:block}.asof{margin-top:8px}.unit-card{min-height:88px}}
 </style>
 </head>
 <body>
-<div class="wrap">
-  <header class="top">
-    <h1 id="buildingName">Building Passbook</h1>
-    <span id="asOf"></span>
-  </header>
+<div class="app-shell">
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark">₹</div>
+      <div><h1 id="sideBuildingName">Building Passbook</h1><small>Interactive view only</small></div>
+    </div>
+    <div class="side-title">Years & months</div>
+    <div id="yearMonthNav"><div class="empty" style="padding:20px 5px">Loading…</div></div>
+  </aside>
 
-  <div id="configNote" class="config-note" style="display:none;">
-    Set <code>API_URL</code> at the top of the script to your deployed Apps Script /exec URL to connect this to your sheet.
-  </div>
-
-  <div id="content">
-    <div class="empty">Loading…</div>
-  </div>
+  <main class="main-card">
+    <div class="topbar">
+      <div>
+        <h2 id="pageTitle">Building Passbook</h2>
+        <p id="pageSubtitle">Select a month from the left to view unit payment status.</p>
+      </div>
+      <div class="asof" id="asOf"></div>
+    </div>
+    <div id="configNote" class="config-note" style="display:none">
+      Set <code>API_URL</code> to your deployed Apps Script <code>/exec</code> URL.
+    </div>
+    <div id="content"><div class="empty">Loading data…</div></div>
+  </main>
 </div>
 
-<script>
-// ── SET THIS to your deployed Apps Script Web App URL ──
-const API_URL = "https://script.google.com/macros/s/AKfycbyFxZ1oqTe0F57E5gskskmTxmbF-8urrzHyHJjUvxXe-Chqr37T5fT2RP0ECk7Pk0EyKQ/exec";
-
-const fmt = n => '₹' + Number(n || 0).toLocaleString('en-IN', { maximumFractionDigits: 0 });
-const monthName = m => {
-  if (!m) return '';
-  const [y, mo] = m.split('-');
-  return new Date(y, mo - 1).toLocaleDateString('en-IN', { month: 'long', year: 'numeric' });
-};
-
-async function load() {
-  if (!API_URL || API_URL.startsWith('PASTE_')) {
-    document.getElementById('configNote').style.display = 'block';
-    renderDemo();
-    return;
-  }
-  try {
-    const res = await fetch(API_URL + '?action=dashboard');
-    const data = await res.json();
-    if (data.error) throw new Error(data.error);
-    render(data);
-  } catch (err) {
-    document.getElementById('content').innerHTML =
-      `<div class="empty">Couldn't load data: ${err.message}</div>`;
-  }
-}
-
-function render(data) {
-  document.getElementById('buildingName').textContent = data.buildingName || 'Building Passbook';
-  document.getElementById('asOf').textContent = new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
-
-  const balance = data.cumulativeBalance;
-  const balClass = balance < 0 ? 'deficit' : 'surplus';
-  let html = `
-    <div class="passbook">
-      <div class="label">${balance < 0 ? 'Deficit' : 'Surplus'} (all-time)</div>
-      <div class="balance ${balClass}">${fmt(Math.abs(balance))}</div>
-      <div class="sub-row">
-        <div><div class="label">Total collected</div><div class="val">${fmt(data.totalCollected)}</div></div>
-        <div><div class="label">Total spent</div><div class="val">${fmt(data.totalExpenses)}</div></div>
-      </div>
-    </div>`;
-
-  if (data.pendingReimbursements && data.pendingReimbursements.length) {
-    const total = data.pendingReimbursements.reduce((s, r) => s + Number(r.Amount || 0), 0);
-    html += `<div class="reimbursement-banner"><strong>${fmt(total)}</strong> owed back to residents who paid building expenses out of pocket — see months below for detail.</div>`;
-  }
-
-  if (!data.monthly || !data.monthly.length) {
-    html += `<div class="empty">No months recorded yet.</div>`;
-  } else {
-    data.monthly.forEach((m, idx) => {
-      const surplusClass = m.surplus < 0 ? 'deficit' : 'surplus';
-      html += `
-      <div class="month-block ${idx === 0 ? 'open' : ''}" data-idx="${idx}">
-        <div class="month-header" onclick="toggleMonth(${idx})">
-          <div class="m-name">${monthName(m.month)}</div>
-          <div style="display:flex;align-items:center;">
-            <div class="m-figs">
-              <div>Collected <span class="amt">${fmt(m.collected)}</span></div>
-              <div>Spent <span class="amt">${fmt(m.spent)}</span></div>
-              <div style="color:var(--${surplusClass})">${m.surplus < 0 ? 'Deficit' : 'Surplus'} <span class="amt">${fmt(Math.abs(m.surplus))}</span></div>
-            </div>
-            <span class="chev">▶</span>
-          </div>
-        </div>
-        <div class="month-body">
-          <div class="section-label">Unit payment status</div>
-          <div class="unit-grid">
-            ${m.unitStatus.map(u => `
-              <div class="unit-chip ${u.status.toLowerCase()}">
-                <span class="u-no">${u.unit}</span>${u.status}
-              </div>`).join('')}
-          </div>
-          <div class="section-label">Spends</div>
-          ${m.expenses.length ? `
-          <table class="exp-table">
-            ${m.expenses.map(x => `
-              <tr>
-                <td>${x.Description}<span class="cat">${x.Category}${x.PaidFrom && x.PaidFrom !== 'Fund' ? `<span class="pocket-tag">Paid by ${x.PaidFrom}${x.ReimbursementStatus === 'Settled' ? ' · settled' : ' · pending'}</span>` : ''}</span>
-                ${x.InvoiceLink ? `<a href="${x.InvoiceLink}" target="_blank">View invoice ↗</a>` : ''}</td>
-                <td>${fmt(x.Amount)}</td>
-              </tr>`).join('')}
-          </table>` : `<div style="color:var(--ink-soft);font-size:13px;">No spends recorded.</div>`}
-        </div>
-      </div>`;
-    });
-  }
-
-  document.getElementById('content').innerHTML = html;
-}
-
-function toggleMonth(idx) {
-  const el = document.querySelector(`.month-block[data-idx="${idx}"]`);
-  el.classList.toggle('open');
-}
-
-function renderDemo() {
-  render({
-    buildingName: 'My Residency (demo data)',
-    totalCollected: 148000, totalExpenses: 132500, cumulativeBalance: 15500,
-    pendingReimbursements: [{ Amount: 1200 }],
-    monthly: [
-      {
-        month: '2026-08', due: 50000, collected: 46000, spent: 41200, surplus: 4800,
-        unitStatus: [
-          { unit: '1A', due: 2000, paid: 2000, status: 'Paid' },
-          { unit: '1B', due: 2000, paid: 0, status: 'Unpaid' },
-          { unit: '1C', due: 2000, paid: 1000, status: 'Partial' },
-          { unit: '1D', due: 2000, paid: 2000, status: 'Paid' },
-          { unit: '1E', due: 2000, paid: 2000, status: 'Paid' }
-        ],
-        expenses: [
-          { Description: 'Lift AMC', Category: 'Maintenance contract', Amount: 8000, PaidFrom: 'Fund', InvoiceLink: '' },
-          { Description: 'Common area bulbs', Category: 'Electrical', Amount: 1200, PaidFrom: 'Ramesh (2B)', InvoiceLink: '', ReimbursementStatus: 'Pending' },
-          { Description: 'Water tank cleaning', Category: 'Housekeeping', Amount: 3500, PaidFrom: 'Fund', InvoiceLink: '' }
-        ]
-      }
-    ]
-  });
-}
-
-load();
-</script>
-</body>
 </html>
