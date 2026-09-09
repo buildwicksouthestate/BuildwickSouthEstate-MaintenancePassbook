@@ -110,19 +110,16 @@ function photoHtml(url,name,cls='ownerPhoto'){
 
   let imageUrl = raw;
 
-  // Google Drive file link:
-  // https://drive.google.com/file/d/FILE_ID/view?usp=sharing
   const driveMatch = raw.match(/drive\.google\.com\/file\/d\/([^/]+)/i);
 
   if(driveMatch){
-    imageUrl = 'https://drive.google.com/uc?export=view&id=' + driveMatch[1];
+    imageUrl = 'https://drive.google.com/thumbnail?id=' + driveMatch[1] + '&sz=w800';
   }
 
-  // Google Drive open?id=FILE_ID format
   const driveOpenMatch = raw.match(/drive\.google\.com\/open\?id=([^&]+)/i);
 
   if(driveOpenMatch){
-    imageUrl = 'https://drive.google.com/uc?export=view&id=' + driveOpenMatch[1];
+    imageUrl = 'https://drive.google.com/thumbnail?id=' + driveOpenMatch[1] + '&sz=w800';
   }
 
   return `
@@ -138,7 +135,7 @@ function photoHtml(url,name,cls='ownerPhoto'){
     </div>
   `;
 }
-function showUnitOwnerDetails(){
+  function showUnitOwnerDetails(){
   document.getElementById('title').textContent='Unit / Owner Details';
   document.getElementById('subtitle').textContent='View-only resident directory. Click any unit for annual payment and reimbursement history.';
   const rows=(DATA.unitDetails||DATA.units||[]).slice().sort((a,b)=>String(a.UnitNo||'').localeCompare(String(b.UnitNo||''),undefined,{numeric:true}));
