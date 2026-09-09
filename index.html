@@ -18,7 +18,7 @@ radial-gradient(circle at 4% 0%,#e6e0ff 0,transparent 28%),radial-gradient(circl
 .app{max-width:1360px;margin:auto;display:grid;grid-template-columns:280px 1fr;gap:18px;align-items:start}
 .sidebar,.main{background:rgba(255,255,255,.94);border:1px solid var(--line);box-shadow:var(--shadow);border-radius:20px}.sidebar{position:sticky;top:22px;max-height:calc(100vh - 44px);overflow:auto;padding:18px}
 .brand{display:flex;align-items:center;gap:11px;margin:2px 2px 22px}.brandMark{width:44px;height:44px;border-radius:14px;display:grid;place-items:center;color:#fff;font-weight:800;font-size:20px;background:linear-gradient(135deg,#4263eb,#8b5cf6);box-shadow:0 10px 22px rgba(66,99,235,.25)}
-.brandLogo{display:block;width:100%;max-width:235px;height:82px;object-fit:contain;object-position:left center}.brandSub{margin-top:-4px}.brand small{display:block;color:var(--muted);font-size:11px;margin-top:2px}.sideTitle{font-size:11px;text-transform:uppercase;letter-spacing:.13em;font-weight:800;color:var(--muted);margin:8px 10px 10px}
+.brandLogo{display:block;width:100%;max-width:270px;height:105px;object-fit:contain;object-position:left center}.brandSub{margin-top:-4px}.brand small{display:block;color:var(--muted);font-size:11px;margin-top:2px}.sideTitle{font-size:11px;text-transform:uppercase;letter-spacing:.13em;font-weight:800;color:var(--muted);margin:8px 10px 10px}
 .year{margin-bottom:9px}.yearHead{width:100%;border:0;background:#f5f3ff;border-radius:12px;padding:12px 13px;display:flex;align-items:center;justify-content:space-between;font-weight:800;color:#20283a;cursor:pointer}.yearHead:hover{background:#eeeaff}.yearArrow{transition:.2s}.year.collapsed .yearArrow{transform:rotate(-90deg)}.year.collapsed .months{display:none}
 .month{margin-top:6px}.monthHead{width:100%;border:0;background:transparent;border-radius:11px;padding:10px 11px;display:flex;align-items:center;justify-content:space-between;text-align:left;color:#4d586b;cursor:pointer;font-size:12px}.monthHead:hover{background:#f4f1ff;color:#4935b9}.monthHead.active{background:linear-gradient(90deg,#e9e7ff,#f3edff);color:#4935b9;font-weight:800}.monthArrow{font-size:10px;transition:.2s}.month.open .monthArrow{transform:rotate(90deg)}
 .monthSections{display:none;padding:3px 0 6px 16px}.month.open .monthSections{display:block}.sectionBtn{width:100%;border:0;background:transparent;border-radius:9px;padding:8px 8px;display:flex;align-items:center;gap:8px;text-align:left;color:#667085;font-size:11px;cursor:pointer}.sectionBtn:hover{background:#f7f5ff;color:#4935b9}.sectionIcon{width:19px;height:19px;border-radius:6px;display:grid;place-items:center;font-size:10px;font-weight:800}.sectionBtn.maintenance .sectionIcon{background:#d9f8e4;color:#08752f}.sectionBtn.expenses .sectionIcon{background:#ffe0e2;color:#b42318}.sectionBtn.reimbursements .sectionIcon{background:#eadcff;color:#6333c5}.sectionCount{margin-left:auto;font-size:9px;color:var(--muted);font-weight:700}
@@ -43,7 +43,7 @@ radial-gradient(circle at 4% 0%,#e6e0ff 0,transparent 28%),radial-gradient(circl
   </aside>
   <main class="main">
     <div class="top"><div><h2 id="title">Building Passbook</h2><p id="subtitle">Select a month from the left.</p></div><div class="asof" id="asof"></div></div>
-    <div id="content"><div class="empty">Loading Google Sheet data…</div></div>
+    <div id="content"><div class="empty">Loading data, please wait…</div></div>
   </main>
 </div>
 <script>
