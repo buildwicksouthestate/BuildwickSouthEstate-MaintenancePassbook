@@ -102,8 +102,41 @@ function initials(name){
   return (parts.slice(0,2).map(x=>x[0]).join('')||'?').toUpperCase();
 }
 function photoHtml(url,name,cls='ownerPhoto'){
-  if(url) return `<img class="${cls}" src="${esc(url)}" alt="${esc(name||'Owner')}" onerror="this.outerHTML='<div class="${cls} ${cls}Fallback">${esc(initials(name))}</div>'">`;
-  return `<div class="${cls} ${cls}Fallback">${esc(initials(name))}</div>`;
+  const raw = String(url || '').trim();
+
+  if(!raw){
+    return `<div class="${cls} ${cls}Fallback">${esc(initials(name))}</div>`;
+  }
+
+  let imageUrl = raw;
+
+  // Google Drive file link:
+  // https://drive.google.com/file/d/FILE_ID/view?usp=sharing
+  const driveMatch = raw.match(/drive\.google\.com\/file\/d\/([^/]+)/i);
+
+  if(driveMatch){
+    imageUrl = 'https://drive.google.com/uc?export=view&id=' + driveMatch[1];
+  }
+
+  // Google Drive open?id=FILE_ID format
+  const driveOpenMatch = raw.match(/drive\.google\.com\/open\?id=([^&]+)/i);
+
+  if(driveOpenMatch){
+    imageUrl = 'https://drive.google.com/uc?export=view&id=' + driveOpenMatch[1];
+  }
+
+  return `
+    <img
+      class="${cls}"
+      src="${esc(imageUrl)}"
+      alt="${esc(name || 'Owner')}"
+      loading="lazy"
+      onerror="this.style.display='none';this.nextElementSibling.style.display='grid';"
+    >
+    <div class="${cls} ${cls}Fallback" style="display:none">
+      ${esc(initials(name))}
+    </div>
+  `;
 }
 function showUnitOwnerDetails(){
   document.getElementById('title').textContent='Unit / Owner Details';
