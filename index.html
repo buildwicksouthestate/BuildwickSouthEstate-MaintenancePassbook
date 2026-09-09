@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Buildwick South Estate - Building Maintenance Passbook</title>
+<title>BuildwickSouthEstate-MaintenancePassbook</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Lora:wght@600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
@@ -18,7 +18,7 @@ radial-gradient(circle at 4% 0%,#e6e0ff 0,transparent 28%),radial-gradient(circl
 .app{max-width:1360px;margin:auto;display:grid;grid-template-columns:280px 1fr;gap:18px;align-items:start}
 .sidebar,.main{background:rgba(255,255,255,.94);border:1px solid var(--line);box-shadow:var(--shadow);border-radius:20px}.sidebar{position:sticky;top:22px;max-height:calc(100vh - 44px);overflow:auto;padding:18px}
 .brand{display:flex;align-items:center;gap:11px;margin:2px 2px 22px}.brandMark{width:44px;height:44px;border-radius:14px;display:grid;place-items:center;color:#fff;font-weight:800;font-size:20px;background:linear-gradient(135deg,#4263eb,#8b5cf6);box-shadow:0 10px 22px rgba(66,99,235,.25)}
-.brandLogo{display:block;width:100%;max-width:270px;height:105px;object-fit:contain;object-position:left center}.brandSub{margin-top:-4px}.brand small{display:block;color:var(--muted);font-size:11px;margin-top:2px}.sideTitle{font-size:11px;text-transform:uppercase;letter-spacing:.13em;font-weight:800;color:var(--muted);margin:8px 10px 10px}
+.brandLogo{display:block;width:100%;max-width:270px;height:150px;object-fit:contain;object-position:left center}.brandSub{margin-top:-4px}.brand small{display:block;color:var(--muted);font-size:11px;margin-top:2px}.sideTitle{font-size:11px;text-transform:uppercase;letter-spacing:.13em;font-weight:800;color:var(--muted);margin:8px 10px 10px}
 .year{margin-bottom:9px}.yearHead{width:100%;border:0;background:#f5f3ff;border-radius:12px;padding:12px 13px;display:flex;align-items:center;justify-content:space-between;font-weight:800;color:#20283a;cursor:pointer}.yearHead:hover{background:#eeeaff}.yearArrow{transition:.2s}.year.collapsed .yearArrow{transform:rotate(-90deg)}.year.collapsed .months{display:none}
 .month{margin-top:6px}.monthHead{width:100%;border:0;background:transparent;border-radius:11px;padding:10px 11px;display:flex;align-items:center;justify-content:space-between;text-align:left;color:#4d586b;cursor:pointer;font-size:12px}.monthHead:hover{background:#f4f1ff;color:#4935b9}.monthHead.active{background:linear-gradient(90deg,#e9e7ff,#f3edff);color:#4935b9;font-weight:800}.monthArrow{font-size:10px;transition:.2s}.month.open .monthArrow{transform:rotate(90deg)}
 .monthSections{display:none;padding:3px 0 6px 16px}.month.open .monthSections{display:block}.sectionBtn{width:100%;border:0;background:transparent;border-radius:9px;padding:8px 8px;display:flex;align-items:center;gap:8px;text-align:left;color:#667085;font-size:11px;cursor:pointer}.sectionBtn:hover{background:#f7f5ff;color:#4935b9}.sectionIcon{width:19px;height:19px;border-radius:6px;display:grid;place-items:center;font-size:10px;font-weight:800}.sectionBtn.maintenance .sectionIcon{background:#d9f8e4;color:#08752f}.sectionBtn.expenses .sectionIcon{background:#ffe0e2;color:#b42318}.sectionBtn.reimbursements .sectionIcon{background:#eadcff;color:#6333c5}.sectionCount{margin-left:auto;font-size:9px;color:var(--muted);font-weight:700}
@@ -33,7 +33,13 @@ radial-gradient(circle at 4% 0%,#e6e0ff 0,transparent 28%),radial-gradient(circl
 @media(max-width:1050px){.app{grid-template-columns:245px 1fr}.unitGrid{grid-template-columns:repeat(4,minmax(0,1fr))}.bottomGrid{grid-template-columns:1fr 1fr}.bottomGrid .panel:last-child{grid-column:1/-1}}
 @media(max-width:760px){body{padding:10px}.app{grid-template-columns:1fr}.sidebar{position:relative;top:auto;max-height:none}.summary{grid-template-columns:1fr}.unitGrid{grid-template-columns:repeat(2,minmax(0,1fr))}.bottomGrid{grid-template-columns:1fr}.bottomGrid .panel:last-child{grid-column:auto}.top{display:block}.asof{margin-top:7px}.main{padding:17px}}
 </style>
-</head>
+<style>
+.balanceGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}
+.balanceCard{padding:15px;border-radius:14px;border:1px solid var(--line);background:#fff}
+.balanceCard .k{font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:800}.balanceCard .v{font-size:21px;font-weight:800;margin-top:5px}
+.balanceCard.opening{background:#eef2ff;border-color:#cdd6ff}.balanceCard.received{background:#effcf3;border-color:#bcebcf}.balanceCard.spent{background:#fff2f3;border-color:#ffd0d4}.balanceCard.closing{background:#f5f0ff;border-color:#d8c4ff}
+.yearTable{width:100%;border-collapse:collapse;font-size:10px}.yearTable th,.yearTable td{padding:10px 11px;border-bottom:1px solid #eeeaf5;text-align:left}.yearTable th{font-size:8px;color:var(--muted);text-transform:uppercase;background:#faf9ff}.yearTable .total{font-weight:800;background:#faf9ff}
+</style></head>
 <body>
 <div class="app">
   <aside class="sidebar">
@@ -43,11 +49,11 @@ radial-gradient(circle at 4% 0%,#e6e0ff 0,transparent 28%),radial-gradient(circl
   </aside>
   <main class="main">
     <div class="top"><div><h2 id="title">Building Passbook</h2><p id="subtitle">Select a month from the left.</p></div><div class="asof" id="asof"></div></div>
-    <div id="content"><div class="empty">Loading data, please wait…</div></div>
+    <div id="content"><div class="empty">Loading Google Sheet data…</div></div>
   </main>
 </div>
 <script>
-const API_URL='https://script.google.com/macros/s/AKfycbztnPnHGzqWMaCBoZlmBcBXcfrNwOhSsi78NAEbBBoacDAyKyZvx2IMCIbf4xZ-hSozSA/exec';
+const API_URL='https://script.google.com/macros/s/AKfycbyFxZ1oqTe0F57E5gskskmTxmbF-8urrzHyHJjUvxXe-Chqr37T5fT2RP0ECk7Pk0EyKQ/exec';
 let DATA=null, selectedKey='';
 const money=n=>'₹'+Number(n||0).toLocaleString('en-IN',{maximumFractionDigits:0});
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -69,7 +75,7 @@ function nav(){
   DATA.monthly.forEach(m=>{(groups[m.year]??=[]).push(m)});
   const years=Object.keys(groups).sort((a,b)=>Number(b)-Number(a));
   if(!years.length){document.getElementById('nav').innerHTML='<div class="empty">No months found.</div>';return}
-  document.getElementById('nav').innerHTML=years.map(y=>`<div class="year" id="year-${y}"><button class="yearHead" onclick="toggleYear('${y}')"><span>${esc(y)}</span><span class="yearArrow">▼</span></button><div class="months">${groups[y].sort((a,b)=>b.key.localeCompare(a.key)).map(m=>monthHtml(m)).join('')}</div></div>`).join('');
+  document.getElementById('nav').innerHTML=years.map(y=>`<div class="year" id="year-${y}"><button class="yearHead" onclick="showYear('${y}')"><span>${esc(y)}</span><span class="yearArrow">▼</span></button><div class="months">${groups[y].sort((a,b)=>b.key.localeCompare(a.key)).map(m=>monthHtml(m)).join('')}</div></div>`).join('');
 }
 function monthHtml(m){
   const open=selectedKey===m.key?'open':''; const maint=m.unitStatus?.length||0, exp=m.expenses?.length||0, rei=m.reimbursements?.length||0;
@@ -80,6 +86,7 @@ function monthHtml(m){
   </div></div>`;
 }
 function toggleYear(y){document.getElementById('year-'+y).classList.toggle('collapsed')}
+function showYear(y){selectedKey='';nav();const rows=(DATA.monthly||[]).filter(m=>String(m.year)===String(y)).sort((a,b)=>a.key.localeCompare(b.key));renderYear(y,rows);window.scrollTo({top:0,behavior:'smooth'})}
 function selectMonth(k){selectedKey=k;nav();render(getMonth(k));window.scrollTo({top:0,behavior:'smooth'})}
 function showSection(id){const m=getMonth(selectedKey); if(!m)return; if(id==='maintenance'||id==='expenses'||id==='reimbursements'){renderDetail(m,id);window.scrollTo({top:0,behavior:'smooth'});return} const el=document.getElementById(id);if(el)el.scrollIntoView({behavior:'smooth',block:'start'})}
 function unitInfo(m,n){return (m.unitStatus||[]).find(x=>String(x.unit).trim()===String(n).trim())||null}
@@ -170,11 +177,27 @@ function renderDetail(m,type){
   document.getElementById('content').innerHTML=type==='maintenance'?maintenanceDetails(m):type==='expenses'?expenseDetails(m):reimbursementDetails(m);
 }
 function shortDate(v){if(!v)return '';const d=new Date(v);return isNaN(d)?String(v):d.toLocaleDateString('en-IN',{day:'2-digit',month:'short'})}
+function renderYear(y,rows){
+ const opening=rows.length?Number(rows[0].openingBalance)||0:0;
+ const received=rows.reduce((s,m)=>s+(Number(m.collected)||0),0);
+ const spent=rows.reduce((s,m)=>s+(Number(m.spent)||0),0);
+ const closing=rows.length?Number(rows[rows.length-1].closingBalance)||0:opening;
+ document.getElementById('title').textContent=String(y)+' Annual Overview';
+ document.getElementById('subtitle').textContent='Yearly maintenance, expenses and balance at a glance';
+ document.getElementById('content').innerHTML=`<div class="detailView"><div class="balanceGrid">
+ <div class="balanceCard opening"><div class="k">Opening balance</div><div class="v">${money(opening)}</div></div>
+ <div class="balanceCard received"><div class="k">Maintenance received</div><div class="v">${money(received)}</div></div>
+ <div class="balanceCard spent"><div class="k">Expenses incurred</div><div class="v">${money(spent)}</div></div>
+ <div class="balanceCard closing"><div class="k">Closing balance</div><div class="v">${money(closing)}</div></div></div>
+ <div class="detailCard"><div class="detailCardHead"><h4>${esc(y)} Monthly Summary</h4><small>${rows.length} months</small></div>
+ ${rows.length?`<div class="detailTableWrap"><table class="yearTable"><thead><tr><th>Month</th><th>Opening</th><th>Maintenance Received</th><th>Expenses</th><th>Net</th><th>Closing</th></tr></thead><tbody>${rows.map(m=>`<tr><td><b>${esc(m.label)}</b></td><td>${money(m.openingBalance)}</td><td>${money(m.collected)}</td><td>${money(m.spent)}</td><td>${money((Number(m.collected)||0)-(Number(m.spent)||0))}</td><td><b>${money(m.closingBalance)}</b></td></tr>`).join('')}<tr class="total"><td>Year total</td><td>${money(opening)}</td><td>${money(received)}</td><td>${money(spent)}</td><td>${money(received-spent)}</td><td>${money(closing)}</td></tr></tbody></table></div>`:'<div class="detailEmpty">No records found for this year.</div>'}</div></div>`;
+}
+
 function render(m){
   if(!m){document.getElementById('content').innerHTML='<div class="empty">Select a month.</div>';return}
   document.getElementById('title').textContent=m.label; document.getElementById('subtitle').textContent='Unit-wise maintenance status, expenses and reimbursements';
   const collected=+m.collected||0, spent=+m.spent||0, reimbursement=(m.reimbursements||[]).filter(x=>String(x.status).toLowerCase()!=='closed').reduce((s,x)=>s+(+x.amount||0),0);
-  document.getElementById('content').innerHTML=`<div class="summary"><div class="stat green"><div class="label">Maintenance Received</div><div class="value">${money(collected)}</div><div class="sub">${(m.unitStatus||[]).filter(x=>(+x.paid||0)>=(+x.due||0)&&(+x.due||0)>0).length} fully paid units</div></div><div class="stat red"><div class="label">Expenses Incurred</div><div class="value">${money(spent)}</div><div class="sub">${(m.expenses||[]).length} expense entries</div></div><div class="stat purple"><div class="label">Reimbursements</div><div class="value">${money(reimbursement)}</div><div class="sub">${(m.reimbursements||[]).filter(x=>String(x.status).toLowerCase()!=='closed').length} pending · ${(m.reimbursements||[]).filter(x=>String(x.status).toLowerCase()==='closed').length} closed</div></div></div><div class="legend"><span><i class="dot green"></i> Paid</span><span><i class="dot red"></i> Pending / partial</span><span><i class="dot purple"></i> Reimbursement required</span></div><div class="unitsTitle"><h3>Units Overview</h3><small>Five units per floor on desktop</small></div>${units(m)}<div class="bottomGrid">${maintenancePanel(m)}${expensesPanel(m)}${reimbursePanel(m)}</div>`;
+  document.getElementById('content').innerHTML=`<div class="balanceGrid"><div class="balanceCard opening"><div class="k">Opening balance</div><div class="v">${money(m.openingBalance)}</div></div><div class="balanceCard received"><div class="k">Maintenance received</div><div class="v">${money(collected)}</div></div><div class="balanceCard spent"><div class="k">Expenses incurred</div><div class="v">${money(spent)}</div></div><div class="balanceCard closing"><div class="k">Closing balance</div><div class="v">${money(m.closingBalance)}</div></div></div><div class="summary"><div class="stat green"><div class="label">Maintenance Received</div><div class="value">${money(collected)}</div><div class="sub">${(m.unitStatus||[]).filter(x=>(+x.paid||0)>=(+x.due||0)&&(+x.due||0)>0).length} fully paid units</div></div><div class="stat red"><div class="label">Expenses Incurred</div><div class="value">${money(spent)}</div><div class="sub">${(m.expenses||[]).length} expense entries</div></div><div class="stat purple"><div class="label">Reimbursements</div><div class="value">${money(reimbursement)}</div><div class="sub">${(m.reimbursements||[]).filter(x=>String(x.status).toLowerCase()!=='closed').length} pending · ${(m.reimbursements||[]).filter(x=>String(x.status).toLowerCase()==='closed').length} closed</div></div></div><div class="legend"><span><i class="dot green"></i> Paid</span><span><i class="dot red"></i> Pending / partial</span><span><i class="dot purple"></i> Reimbursement required</span></div><div class="unitsTitle"><h3>Units Overview</h3><small>Five units per floor on desktop</small></div>${units(m)}<div class="bottomGrid">${maintenancePanel(m)}${expensesPanel(m)}${reimbursePanel(m)}</div>`;
 }
 async function load(){
  try{
