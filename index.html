@@ -408,14 +408,130 @@ function showMaintenanceReminders(scroll=true){ currentView='reminders';
   if(scroll)window.scrollTo({top:0,behavior:'smooth'});
 }
 function communityHome(){
-  const groups=groupedSelectedMeetings();
-  const latestMeetings=groups.slice(0,2);
-  const mr=pendingReminderRows();
-  return `<div class="communitySection"><div class="communityGrid">
-    <div class="communityCard"><div class="communityHead blue"><span>📢 Upcoming Updates</span><small>${updateRows().filter(x=>{const d=new Date(x.date||x.Date);return !isNaN(d)&&d>=new Date(new Date().setHours(0,0,0,0))}).length}</small></div><div class="communityList"><div class="communityItem" onclick="showUpcomingUpdates()"><div class="communityTitle">View upcoming meetings, occasions & notices →</div><div class="communityDesc">Open the complete community updates list.</div></div></div></div>
-    <div class="communityCard"><div class="communityHead purple"><span>📝 Meeting Minutes — ${esc(selectedMonthLabel())}</span><small>${latestMeetings.length}/2 shown</small></div><div class="communityList">${latestMeetings.length?latestMeetings.map((g,i)=>{const first=g[0];return `<div class="communityItem" onclick="showMeetingMinutes()"><div class="communityDate">${esc(formatFullDate(first.meetingDate||first.MeetingDate))}${first.meetingTime||first.MeetingTime?' · '+esc(first.meetingTime||first.MeetingTime):''}</div><div class="communityTitle">${esc(first.title||first.Title||'Meeting')}</div><div class="communityDesc">${g.length} pointer${g.length===1?'':'s'} · Click to view all ${esc(selectedMonthLabel())} meetings →</div></div>`}).join(''):'<div class="empty">No meetings for '+esc(selectedMonthLabel())+'.</div>'}</div></div>
-    <div class="communityCard"><div class="communityHead orange"><span>🔔 Maintenance — ${esc(selectedMonthLabel())}</span><small>${mr.length} pending</small></div><div class="communityList">${mr.length?mr.slice(0,3).map(x=>`<div class="communityItem" onclick="showMaintenanceReminders()"><div class="communityDate">${esc(x.unit||'Unit')}</div><div class="communityTitle">₹${Number(x.balance||0).toLocaleString('en-IN')} pending</div><div class="communityDesc">MonthlyMaintenance Column G = Pending → view details</div></div>`).join(''):'<div class="empty">No Pending records in MonthlyMaintenance column G.</div>'}</div></div>
-  </div></div>`;
+  const key = getSelectedMonthKey();
+  const label = getSelectedMonthLabel();
+
+  // ==============================
+  // UPCOMING UPDATES — ALWAYS SHOW
+  // ==============================
+  const updates = (DATA?.upcomingUpdates || [])
+    .filter(x => x.active !== false)
+    .sort((a,b) => {
+      const da = new Date((a.date || '') + ' ' + (a.time || '00:00'));
+      const db = new Date((b.date || '') + ' ' + (b.time || '00:00'));
+      return da - db;
+    });
+
+  const upcomingHtml = updates.length
+    ? updates.map(x => `
+        <div class="communityCard">
+          <div class="communityCardTop">
+            <span class="communityType">${esc(x.type || 'Update')}</span>
+            <span class="communityDate">
+              ${esc(x.date || '')}${x.time ? ' · ' + esc(x.time) : ''}
+            </span>
+          </div>
+
+          <h3>${esc(x.title || 'Community Update')}</h3>
+
+          ${x.description
+            ? `<div class="communityDescription">${esc(x.description)}</div>`
+            : ''
+          }
+
+          ${x.attachmentLink
+            ? `<a class="docBtn"
+                 href="${esc(x.attachmentLink)}"
+                 target="_blank"
+                 rel="noopener">
+                 📎 View attachment
+               </a>`
+            : ''
+          }
+        </div>
+      `).join('')
+    : `<div class="empty">No upcoming updates available.</div>`;
+
+
+  // ==============================
+  // MEETING MINUTES — SELECTED MONTH
+  // MAXIMUM 2 ON HOME
+  // ==============================
+  const meetings = selectedMonthMeetings();
+
+  const meetingHtml = meetings.length
+    ? meetings.slice(0,2).map((m, index) => `
+        <div class="communityCard meetingCard"
+             onclick="openMinutes('${escAttr(m._id)}')">
+
+          <div class="communityCardTop">
+            <span class="communityType">Meeting</span>
+            <span class="communityDate">
+              ${esc(m._dateDisplay || m.meetingDate || '')}
+              ${m.meetingTime ? ' · ' + esc(m.meetingTime) : ''}
+            </span>
+          </div>
+
+          <h3>${esc(m.title || 'Meeting')}</h3>
+
+          <div class="meetingClickHint">
+            Click to view meeting details →
+          </div>
+
+        </div>
+      `).join('')
+    : `<div class="empty">No meetings for ${esc(label)}.</div>`;
+
+
+  // ==============================
+  // DASHBOARD COMMUNITY SECTION
+  // ==============================
+  return `
+    <div class="communityHome">
+
+      <!-- UPCOMING UPDATES ALWAYS VISIBLE -->
+      <section class="communitySection">
+        <div class="communitySectionHeader">
+          <div>
+            <div class="sectionEyebrow">COMMUNITY</div>
+            <h2>📢 Upcoming Updates</h2>
+            <p>Important upcoming events, notices and occasions</p>
+          </div>
+
+          <button class="smallAction"
+                  onclick="showUpcomingUpdates()">
+            View all →
+          </button>
+        </div>
+
+        <div class="communityGrid">
+          ${upcomingHtml}
+        </div>
+      </section>
+
+
+      <!-- MEETING MINUTES -->
+      <section class="communitySection">
+        <div class="communitySectionHeader">
+          <div>
+            <div class="sectionEyebrow">${esc(label)}</div>
+            <h2>📝 Meeting Minutes</h2>
+            <p>Latest meetings for the selected month</p>
+          </div>
+
+          <button class="smallAction"
+                  onclick="showMeetingMinutes()">
+            View all →
+          </button>
+        </div>
+
+        <div class="communityGrid">
+          ${meetingHtml}
+        </div>
+      </section>
+
+    </div>
+  `;
 }
 function returnHome(){selectedYear='';if(DATA&&DATA.monthly&&DATA.monthly.length){selectedKey=DATA.monthly[0].key;render(DATA.monthly[0])}else{document.getElementById('title').textContent='Building Passbook';document.getElementById('subtitle').textContent='No monthly data available';document.getElementById('content').innerHTML='<div class="empty">No monthly data found.</div>'}}
 
