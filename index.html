@@ -57,6 +57,15 @@ radial-gradient(circle at 4% 0%,#e6e0ff 0,transparent 28%),radial-gradient(circl
 @media(max-width:1050px){.communityGrid{grid-template-columns:1fr 1fr}.communityCard:last-child{grid-column:1/-1}}
 @media(max-width:760px){.communityGrid{grid-template-columns:1fr}.communityCard:last-child{grid-column:auto}}
 
+
+/* Restored opening/closing balance and annual dashboard */
+.balanceGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}
+.balanceCard{padding:15px;border-radius:14px;border:1px solid var(--line);background:#fff;box-shadow:0 5px 15px rgba(30,32,60,.04)}
+.balanceCard .k{font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:800}.balanceCard .v{font-size:21px;font-weight:800;margin-top:5px}
+.balanceCard.opening{background:#eef2ff;border-color:#cdd6ff}.balanceCard.received{background:#effcf3;border-color:#bcebcf}.balanceCard.spent{background:#fff2f3;border-color:#ffd0d4}.balanceCard.closing{background:#f5f0ff;border-color:#d8c4ff}
+.yearTable{width:100%;border-collapse:collapse;font-size:10px}.yearTable th,.yearTable td{padding:10px 11px;border-bottom:1px solid #eeeaf5;text-align:left}.yearTable th{font-size:8px;color:var(--muted);text-transform:uppercase;background:#faf9ff}.yearTable .total{font-weight:800;background:#faf9ff}
+@media(max-width:1050px){.balanceGrid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:760px){.balanceGrid{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -78,8 +87,8 @@ radial-gradient(circle at 4% 0%,#e6e0ff 0,transparent 28%),radial-gradient(circl
   </main>
 </div>
 <script>
-const API_URL='https://script.google.com/macros/s/AKfycbzEKu-SeF2H9ZuJ9g-ti4HgV_CSIIK3ckUSZ-CUTHfzyT-H8k3HXvQyFfQ7ecD1VV4ScA/exec';
-let DATA=null, selectedKey='';
+const API_URL='https://script.google.com/macros/s/AKfycbzQchSjDeXlvW9RFtYaQQhbl3g53Au_RqjXvFCrMhiBxtvq2CVD702fzvgZqj-Hh2DiVQ/exec';
+let DATA=null, selectedKey='', selectedYear='';
 const money=n=>'₹'+Number(n||0).toLocaleString('en-IN',{maximumFractionDigits:0});
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function monthKey(v){
@@ -130,7 +139,14 @@ function monthHtml(m){
   </div></div>`;
 }
 function toggleYear(y){document.getElementById('year-'+y).classList.toggle('collapsed')}
-function selectMonth(k){selectedKey=k;currentView='dashboard';nav();render(getMonth(k));window.scrollTo({top:0,behavior:'smooth'})}
+function showYear(y){
+  selectedKey=''; selectedYear=String(y); currentView='year';
+  nav();
+  const rows=(DATA.monthly||[]).filter(m=>String(m.year)===String(y)).sort((a,b)=>a.key.localeCompare(b.key));
+  renderYear(y,rows);
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function selectMonth(k){selectedKey=k;selectedYear='';currentView='dashboard';nav();render(getMonth(k));window.scrollTo({top:0,behavior:'smooth'})}
 function showSection(id){const m=getMonth(selectedKey); if(!m)return; if(id==='maintenance'||id==='expenses'||id==='reimbursements'){renderDetail(m,id);window.scrollTo({top:0,behavior:'smooth'});return} const el=document.getElementById(id);if(el)el.scrollIntoView({behavior:'smooth',block:'start'})}
 function unitInfo(m,n){return (m.unitStatus||[]).find(x=>String(x.unit).trim()===String(n).trim())||null}
 function reimbursementFor(m,n){return (m.reimbursements||[]).find(r=>String(r.unit||'').trim().toLowerCase()===String(n).trim().toLowerCase()&&String(r.status).toLowerCase()!=='closed')||null}
@@ -220,11 +236,21 @@ function renderDetail(m,type){ currentView='dashboard';
   document.getElementById('content').innerHTML=type==='maintenance'?maintenanceDetails(m):type==='expenses'?expenseDetails(m):reimbursementDetails(m);
 }
 function shortDate(v){if(!v)return '';const d=new Date(v);return isNaN(d)?String(v):d.toLocaleDateString('en-IN',{day:'2-digit',month:'short'})}
+function renderYear(y,rows){
+  const opening=rows.length?Number(rows[0].openingBalance)||0:0;
+  const received=rows.reduce((sum,m)=>sum+(Number(m.collected)||0),0);
+  const spent=rows.reduce((sum,m)=>sum+(Number(m.spent)||0),0);
+  const closing=rows.length?Number(rows[rows.length-1].closingBalance)||0:opening;
+  document.getElementById('title').textContent=String(y)+' Annual Overview';
+  document.getElementById('subtitle').textContent='Yearly maintenance, expenses and balance at a glance';
+  document.getElementById('content').innerHTML=`<div class="detailView"><div class="balanceGrid"><div class="balanceCard opening"><div class="k">Opening balance</div><div class="v">${money(opening)}</div></div><div class="balanceCard received"><div class="k">Maintenance received</div><div class="v">${money(received)}</div></div><div class="balanceCard spent"><div class="k">Expenses incurred</div><div class="v">${money(spent)}</div></div><div class="balanceCard closing"><div class="k">Closing balance</div><div class="v">${money(closing)}</div></div></div><div class="detailCard"><div class="detailCardHead"><h4>${esc(y)} Monthly Summary</h4><small>${rows.length} months</small></div>${rows.length?`<div class="detailTableWrap"><table class="yearTable"><thead><tr><th>Month</th><th>Opening</th><th>Maintenance Received</th><th>Expenses</th><th>Net</th><th>Closing</th></tr></thead><tbody>${rows.map(m=>`<tr><td><b>${esc(m.label)}</b></td><td>${money(m.openingBalance)}</td><td>${money(m.collected)}</td><td>${money(m.spent)}</td><td>${money((Number(m.collected)||0)-(Number(m.spent)||0))}</td><td><b>${money(m.closingBalance)}</b></td></tr>`).join('')}<tr class="total"><td>Year total</td><td>${money(opening)}</td><td>${money(received)}</td><td>${money(spent)}</td><td>${money(received-spent)}</td><td>${money(closing)}</td></tr></tbody></table></div>`:'<div class="detailEmpty">No records found for this year.</div>'}</div></div>`;
+}
+
 function render(m){ currentView='dashboard';
   if(!m){document.getElementById('content').innerHTML='<div class="empty">Select a month.</div>';return}
   document.getElementById('title').textContent=m.label; document.getElementById('subtitle').textContent='Unit-wise maintenance status, expenses and reimbursements';
   const collected=+m.collected||0, spent=+m.spent||0, reimbursement=(m.reimbursements||[]).filter(x=>String(x.status).toLowerCase()!=='closed').reduce((s,x)=>s+(+x.amount||0),0);
-  document.getElementById('content').innerHTML=communityHome()+`<div class="summary"><div class="stat green"><div class="label">Maintenance Received</div><div class="value">${money(collected)}</div><div class="sub">${(m.unitStatus||[]).filter(x=>(+x.paid||0)>=(+x.due||0)&&(+x.due||0)>0).length} fully paid units</div></div><div class="stat red"><div class="label">Expenses Incurred</div><div class="value">${money(spent)}</div><div class="sub">${(m.expenses||[]).length} expense entries</div></div><div class="stat purple"><div class="label">Reimbursements</div><div class="value">${money(reimbursement)}</div><div class="sub">${(m.reimbursements||[]).filter(x=>String(x.status).toLowerCase()!=='closed').length} pending · ${(m.reimbursements||[]).filter(x=>String(x.status).toLowerCase()==='closed').length} closed</div></div></div><div class="legend"><span><i class="dot green"></i> Paid</span><span><i class="dot red"></i> Pending / partial</span><span><i class="dot purple"></i> Reimbursement required</span></div><div class="unitsTitle"><h3>Units Overview</h3><small>Five units per floor on desktop</small></div>${units(m)}<div class="bottomGrid">${maintenancePanel(m)}${expensesPanel(m)}${reimbursePanel(m)}</div>`;
+  document.getElementById('content').innerHTML=communityHome()+`<div class="balanceGrid"><div class="balanceCard opening"><div class="k">Opening balance</div><div class="v">${money(m.openingBalance)}</div></div><div class="balanceCard received"><div class="k">Maintenance received</div><div class="v">${money(collected)}</div></div><div class="balanceCard spent"><div class="k">Expenses incurred</div><div class="v">${money(spent)}</div></div><div class="balanceCard closing"><div class="k">Closing balance</div><div class="v">${money(m.closingBalance)}</div></div></div><div class="summary"><div class="stat green"><div class="label">Maintenance Received</div><div class="value">${money(collected)}</div><div class="sub">${(m.unitStatus||[]).filter(x=>(+x.paid||0)>=(+x.due||0)&&(+x.due||0)>0).length} fully paid units</div></div><div class="stat red"><div class="label">Expenses Incurred</div><div class="value">${money(spent)}</div><div class="sub">${(m.expenses||[]).length} expense entries</div></div><div class="stat purple"><div class="label">Reimbursements</div><div class="value">${money(reimbursement)}</div><div class="sub">${(m.reimbursements||[]).filter(x=>String(x.status).toLowerCase()!=='closed').length} pending · ${(m.reimbursements||[]).filter(x=>String(x.status).toLowerCase()==='closed').length} closed</div></div></div><div class="legend"><span><i class="dot green"></i> Paid</span><span><i class="dot red"></i> Pending / partial</span><span><i class="dot purple"></i> Reimbursement required</span></div><div class="unitsTitle"><h3>Units Overview</h3><small>Five units per floor on desktop</small></div>${units(m)}<div class="bottomGrid">${maintenancePanel(m)}${expensesPanel(m)}${reimbursePanel(m)}</div>`;
 }
 
 function formatFullDate(v){
@@ -299,7 +325,7 @@ function communityHome(){
     <div class="communityCard"><div class="communityHead orange"><span>🔔 Maintenance</span><small>${mr.length} pending</small></div><div class="communityList">${mr.length?mr.slice(0,3).map(x=>`<div class="communityItem" onclick="showMaintenanceReminders()"><div class="communityDate">${esc(x.unit||'Unit')} · ${esc(x.monthLabel||x.month||'Current month')}</div><div class="communityTitle">₹${Number(x.balance||0).toLocaleString('en-IN')} pending</div><div class="communityDesc">Reminder active from the 1st until payment</div></div>`).join(''):'<div class="empty">All current maintenance payments are clear.</div>'}</div></div>
   </div></div>`;
 }
-function returnHome(){if(DATA&&DATA.monthly&&DATA.monthly.length){selectedKey=DATA.monthly[0].key;render(DATA.monthly[0])}else{document.getElementById('title').textContent='Building Passbook';document.getElementById('subtitle').textContent='No monthly data available';document.getElementById('content').innerHTML='<div class="empty">No monthly data found.</div>'}}
+function returnHome(){selectedYear='';if(DATA&&DATA.monthly&&DATA.monthly.length){selectedKey=DATA.monthly[0].key;render(DATA.monthly[0])}else{document.getElementById('title').textContent='Building Passbook';document.getElementById('subtitle').textContent='No monthly data available';document.getElementById('content').innerHTML='<div class="empty">No monthly data found.</div>'}}
 
 let currentView='dashboard';
 let loading=false;
@@ -319,7 +345,9 @@ async function load(preserveView=true){
     if(currentView==='upcoming') showUpcomingUpdates(false);
     else if(currentView==='minutes') showMeetingMinutes(false);
     else if(currentView==='reminders') showMaintenanceReminders(false);
-    else render(selected);
+    else if(currentView==='year' && selectedYear){
+      renderYear(selectedYear,DATA.monthly.filter(m=>String(m.year)===String(selectedYear)).sort((a,b)=>a.key.localeCompare(b.key)));
+    } else render(selected);
   } else {
     currentView='dashboard'; document.getElementById('title').textContent='Community Dashboard'; document.getElementById('subtitle').textContent='Updates, meeting minutes and maintenance reminders'; document.getElementById('content').innerHTML=communityHome()||'<div class="empty">No data found.</div>';
   }
