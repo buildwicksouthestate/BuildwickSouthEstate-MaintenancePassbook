@@ -67,6 +67,16 @@ radial-gradient(circle at 4% 0%,#e6e0ff 0,transparent 28%),radial-gradient(circl
 @media(max-width:1050px){.balanceGrid{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:760px){.balanceGrid{grid-template-columns:1fr}}
 </style>
+<style>
+.ownerDirectory{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.ownerTile{border:1px solid var(--line);border-radius:15px;background:#fff;padding:14px;cursor:pointer;transition:.2s;box-shadow:0 5px 15px rgba(30,32,60,.05)}.ownerTile:hover{transform:translateY(-2px);box-shadow:0 9px 24px rgba(30,32,60,.1);border-color:#cfc4ff}.ownerTileTop{display:flex;gap:12px;align-items:center}.ownerPhoto{width:62px;height:62px;border-radius:14px;object-fit:cover;background:#eee9ff;border:1px solid #ddd6fe}.ownerPhotoFallback{display:grid;place-items:center;color:#5b21b6;font-size:22px;font-weight:800}.ownerTile .unitNo{font-size:17px}.ownerTile .floorText{font-size:9px;color:var(--muted);margin-top:3px}.ownerTile .ownerName{font-size:11px;font-weight:800;margin-top:8px}.ownerTile .contact{font-size:9px;color:var(--muted);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.ownerTile .historyHint{font-size:8px;color:#5b21b6;font-weight:800;margin-top:10px}.profileHead{display:flex;gap:18px;align-items:center;margin-bottom:18px}.profilePhoto{width:104px;height:104px;border-radius:18px;object-fit:cover;background:#eee9ff;border:1px solid #ddd6fe}.profilePhotoFallback{display:grid;place-items:center;color:#5b21b6;font-size:36px;font-weight:800}.profileIdentity h3{margin:0;font-family:var(--serif);font-size:24px}.profileIdentity p{margin:4px 0;color:var(--muted);font-size:10px}.annualGrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-bottom:15px}.annualCard{padding:13px;border:1px solid var(--line);border-radius:13px;background:#faf9ff}.annualCard h4{margin:0 0 8px;font-size:13px}.annualLine{display:flex;justify-content:space-between;gap:10px;font-size:9px;padding:4px 0}.annualLine b{font-size:10px}.annualTotal{border-top:1px solid var(--line);margin-top:5px;padding-top:6px;font-weight:800}.historySection{border:1px solid var(--line);border-radius:15px;background:#fff;overflow:hidden;margin-bottom:14px}.historySectionHead{padding:12px 15px;background:#faf9ff;border-bottom:1px solid var(--line);font-size:12px;font-weight:800}.profileTable{width:100%;border-collapse:collapse;font-size:9px}.profileTable th,.profileTable td{padding:9px 10px;border-bottom:1px solid #eeeaf5;text-align:left;vertical-align:top}.profileTable th{font-size:8px;text-transform:uppercase;color:var(--muted);background:#fff}.profileTable .right{text-align:right}.reimPending{color:#b42318;font-weight:800}.reimClosed{color:#08752f;font-weight:800}.backBtn2{border:0;background:#f0edff;color:#4935b9;border-radius:9px;padding:9px 12px;font-size:10px;font-weight:800;cursor:pointer}.detailActionsTop{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}@media(max-width:1000px){.ownerDirectory{grid-template-columns:repeat(2,minmax(0,1fr))}.annualGrid{grid-template-columns:1fr 1fr}}@media(max-width:760px){.ownerDirectory,.annualGrid{grid-template-columns:1fr}.profileHead{align-items:flex-start}.profilePhoto{width:82px;height:82px}}
+</style>
+<style>
+.ownerNav{margin:8px 0 14px;padding:10px;background:linear-gradient(135deg,#f6f2ff,#eef7ff);border:1px solid #ddd6fe;border-radius:14px}
+.ownerNavBtn{width:100%;border:0;background:#fff;border-radius:10px;padding:11px 10px;text-align:left;color:#4935b9;font-size:10px;font-weight:800;cursor:pointer;display:flex;align-items:center;gap:9px;box-shadow:0 4px 12px rgba(30,32,60,.05)}
+.ownerNavBtn:hover{background:#f7f3ff;transform:translateY(-1px)}
+.ownerNavIcon{width:24px;height:24px;border-radius:8px;background:#eee9ff;display:grid;place-items:center}
+</style>
+<style>@media(max-width:760px){.ownerNav{margin-bottom:10px}.ownerNavBtn{font-size:11px;padding:12px}}</style>
 </head>
 <body>
 <div class="app">
@@ -77,6 +87,12 @@ radial-gradient(circle at 4% 0%,#e6e0ff 0,transparent 28%),radial-gradient(circl
       <button class="communityBtn" onclick="showUpcomingUpdates()"><span class="cbIcon">📢</span>Upcoming Updates</button>
       <button class="communityBtn" onclick="showMeetingMinutes()"><span class="cbIcon">📝</span>Meeting Minutes</button>
       <button class="communityBtn" onclick="showMaintenanceReminders()"><span class="cbIcon">🔔</span>Maintenance Reminders</button>
+    </div>
+    <div class="ownerNav">
+      <button class="ownerNavBtn" onclick="showUnitOwnerDetails()">
+        <span class="ownerNavIcon">👤</span>
+        <span>Unit / Owner Details</span>
+      </button>
     </div>
     <div class="sideTitle">Years & months</div>
     <div id="nav"><div class="empty">Loading years and months…</div></div>
