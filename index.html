@@ -163,6 +163,44 @@ function showYear(y){
   window.scrollTo({top:0,behavior:'smooth'});
 }
 function selectMonth(k){selectedKey=k;selectedYear='';currentView='dashboard';nav();render(getMonth(k));window.scrollTo({top:0,behavior:'smooth'})}
+function initials(name){
+  const parts=String(name||'').trim().split(/\s+/).filter(Boolean);
+  return (parts.slice(0,2).map(x=>x[0]).join('')||'?').toUpperCase();
+}
+function photoHtml(url,name,cls='ownerPhoto'){
+  const raw=String(url||'').trim();
+  if(!raw) return `<div class="${cls} ${cls}Fallback">${esc(initials(name))}</div>`;
+  let imageUrl=raw;
+  let m=raw.match(/drive\.google\.com\/file\/d\/([^/]+)/i);
+  if(m) imageUrl='https://drive.google.com/thumbnail?id='+m[1]+'&sz=w800';
+  m=raw.match(/drive\.google\.com\/open\?id=([^&]+)/i);
+  if(m) imageUrl='https://drive.google.com/thumbnail?id='+m[1]+'&sz=w800';
+  return `<img class="${cls}" src="${esc(imageUrl)}" alt="${esc(name||'Owner')}" loading="lazy"
+    onerror="this.style.display='none';this.nextElementSibling.style.display='grid';">
+    <div class="${cls} ${cls}Fallback" style="display:none">${esc(initials(name))}</div>`;
+}
+function showUnitOwnerDetails(){
+  document.getElementById('title').textContent='Unit / Owner Details';
+  document.getElementById('subtitle').textContent='View-only resident directory. Click any unit for annual payment and reimbursement history.';
+  const rows=(DATA.unitDetails||DATA.units||[]).slice().sort((a,b)=>String(a.UnitNo||'').localeCompare(String(b.UnitNo||''),undefined,{numeric:true}));
+  document.getElementById('content').innerHTML=`<div class="managementPage"><div class="managementHead"><div><h3 style="margin:0;font-size:22px">Unit / Owner Details</h3><p style="margin:4px 0;color:var(--muted);font-size:11px">Unit number, floor, owner contact and photo. Click a unit to view annual financial history.</p></div><button class="backBtn2" onclick="returnHome()">← Dashboard</button></div><div class="ownerDirectory">${rows.map(u=>{const name=u.OwnerName||'';return `<div class="ownerTile" onclick="showUnitOwnerDetail('${esc(u.UnitNo||'')}')">${photoHtml(u.PhotoURL||u.Photo||'',name)}<div class="ownerTileTop"><div style="min-width:0;flex:1"><div class="unitNo">${esc(u.UnitNo||'')}</div><div class="floorText">Floor ${esc(u.Floor||u.FloorNo||'—')}</div><div class="ownerName">${esc(name||'Owner name not set')}</div><div class="contact">📱 ${esc(u.Phone||'—')}</div><div class="contact">✉ ${esc(u.Email||'—')}</div><div class="historyHint">View annual payment history →</div></div></div></div>`}).join('')}</div></div>`;
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function showUnitOwnerDetail(unitNo){
+  const u=(DATA.unitDetails||DATA.units||[]).find(x=>String(x.UnitNo||x.unit||'').trim()===String(unitNo).trim());
+  if(!u){alert('Unit not found');return;}
+  const d=u.annualHistory||[];
+  const totalDue=d.reduce((s,y)=>s+Number(y.due||0),0), totalPaid=d.reduce((s,y)=>s+Number(y.paid||0),0), totalOutstanding=Math.max(0,totalDue-totalPaid);
+  const totalReim=d.reduce((s,y)=>s+Number(y.reimbursementTotal||0),0), totalReimPending=d.reduce((s,y)=>s+Number(y.reimbursementPending||0),0), totalReimClosed=d.reduce((s,y)=>s+Number(y.reimbursementClosed||0),0);
+  document.getElementById('title').textContent=`${unitNo} — Owner Details`;
+  document.getElementById('subtitle').textContent=`${u.OwnerName||'Owner not listed'} · View-only annual history`;
+  const annual=d.length?d.map(y=>`<div class="annualCard"><h4>${esc(y.year)}</h4><div class="annualLine"><span>Maintenance due</span><b>${money(y.due)}</b></div><div class="annualLine"><span>Maintenance paid</span><b>${money(y.paid)}</b></div><div class="annualLine"><span>Outstanding</span><b>${money(Math.max(0,(+y.due||0)-(+y.paid||0)))}</b></div><div class="annualLine"><span>Reimbursements</span><b>${money(y.reimbursementTotal)}</b></div><div class="annualLine"><span>Reimbursement pending</span><b class="reimPending">${money(y.reimbursementPending)}</b></div><div class="annualLine annualTotal"><span>Reimbursement closed</span><b class="reimClosed">${money(y.reimbursementClosed)}</b></div></div>`).join(''):'<div class="historyEmpty">No annual history recorded for this unit.</div>';
+  const paymentRows=d.flatMap(y=>(y.payments||[]).map(r=>({...r,year:y.year}))).sort((a,b)=>String(b.sortKey||'').localeCompare(String(a.sortKey||'')));
+  const reimRows=d.flatMap(y=>(y.reimbursements||[]).map(r=>({...r,year:y.year}))).sort((a,b)=>String(b.sortKey||'').localeCompare(String(a.sortKey||'')));
+  document.getElementById('content').innerHTML=`<div class="detailActionsTop"><button class="backBtn2" onclick="showUnitOwnerDetails()">← All Units</button></div><div class="historyCard"><div class="profileHead">${photoHtml(u.PhotoURL||u.Photo||'',u.OwnerName||'', 'profilePhoto')}<div class="profileIdentity"><h3>${esc(u.OwnerName||'Owner name not set')}</h3><p><b>${esc(u.UnitNo||'')}</b> · Floor ${esc(u.Floor||u.FloorNo||'—')}</p><p>📱 ${esc(u.Phone||'—')} · ✉ ${esc(u.Email||'—')}</p></div></div><div class="historySummary"><div class="historyStat"><div class="k">Total maintenance due</div><div class="v">${money(totalDue)}</div></div><div class="historyStat"><div class="k">Total maintenance paid</div><div class="v">${money(totalPaid)}</div></div><div class="historyStat"><div class="k">Outstanding</div><div class="v">${money(totalOutstanding)}</div></div><div class="historyStat"><div class="k">Reimbursements</div><div class="v">${money(totalReim)}</div></div></div><div class="annualGrid">${annual}</div></div><div class="historySection"><div class="historySectionHead">Annual Payment History — ${paymentRows.length} entries</div>${paymentRows.length?`<div class="historyTableWrap"><table class="profileTable"><thead><tr><th>Year</th><th>Month</th><th>Due</th><th>Paid</th><th>Balance</th><th>Payment Date</th><th>Mode</th><th>Status</th><th>Reference</th></tr></thead><tbody>${paymentRows.map(r=>{const b=Math.max(0,(+r.due||0)-(+r.paid||0));return `<tr><td>${esc(r.year)}</td><td><b>${esc(r.monthLabel||r.month||'—')}</b></td><td>${money(r.due)}</td><td>${money(r.paid)}</td><td>${money(b)}</td><td>${esc(shortDate(r.paidDate)||'—')}</td><td>${esc(r.mode||'—')}</td><td><span class="statusBadge ${String(r.status||'').toLowerCase()}">${esc(r.status||'Pending')}</span></td><td>${esc(r.transactionId||'—')}</td></tr>`}).join('')}</tbody></table></div>`:'<div class="historyEmpty">No maintenance payment entries.</div>'}</div><div class="historySection"><div class="historySectionHead">Annual Reimbursement History — Total ${money(totalReim)} · Pending ${money(totalReimPending)} · Closed ${money(totalReimClosed)}</div>${reimRows.length?`<div class="historyTableWrap"><table class="profileTable"><thead><tr><th>Year</th><th>Date</th><th>Paid By</th><th>Category</th><th>Description</th><th>Amount</th><th>Status</th><th>Invoice</th></tr></thead><tbody>${reimRows.map(r=>`<tr><td>${esc(r.year)}</td><td>${esc(shortDate(r.date)||'—')}</td><td>${esc(r.paidFrom||'—')}</td><td>${esc(r.category||'—')}</td><td>${esc(r.description||'—')}</td><td>${money(r.amount)}</td><td class="${String(r.status).toLowerCase()==='closed'?'reimClosed':'reimPending'}">${esc(r.status||'Pending')}</td><td class="rowDoc">${docButton(r.invoiceLink,'View invoice')}</td></tr>`).join('')}</tbody></table></div>`:'<div class="historyEmpty">No reimbursement entries for this unit.</div>'}</div>`;
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
 function showSection(id){const m=getMonth(selectedKey); if(!m)return; if(id==='maintenance'||id==='expenses'||id==='reimbursements'){renderDetail(m,id);window.scrollTo({top:0,behavior:'smooth'});return} const el=document.getElementById(id);if(el)el.scrollIntoView({behavior:'smooth',block:'start'})}
 function unitInfo(m,n){return (m.unitStatus||[]).find(x=>String(x.unit).trim()===String(n).trim())||null}
 function reimbursementFor(m,n){return (m.reimbursements||[]).find(r=>String(r.unit||'').trim().toLowerCase()===String(n).trim().toLowerCase()&&String(r.status).toLowerCase()!=='closed')||null}
