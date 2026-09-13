@@ -103,7 +103,7 @@ radial-gradient(circle at 4% 0%,#e6e0ff 0,transparent 28%),radial-gradient(circl
   </main>
 </div>
 <script>
-const API_URL='https://script.google.com/macros/s/AKfycbzQchSjDeXlvW9RFtYaQQhbl3g53Au_RqjXvFCrMhiBxtvq2CVD702fzvgZqj-Hh2DiVQ/exec';
+const API_URL='https://script.google.com/macros/s/AKfycbxpSOIiX1LmEy3K-LQAygpytIMVvsTPoJObMiRR-UcNj3rE--Y8PNmumA8GlUoF2S039g/exec';
 let DATA=null, selectedKey='', selectedYear='';
 const money=n=>'₹'+Number(n||0).toLocaleString('en-IN',{maximumFractionDigits:0});
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -315,7 +315,50 @@ function formatFullDate(v){
 function updateRows(){return (DATA&&DATA.upcomingUpdates||[]).filter(x=>String(x.active??true).toLowerCase()!=='false');}
 function minutesRows(){return DATA&&DATA.meetingMinutes||[];}
 function reminderRows(){return DATA&&DATA.maintenanceReminders||[];}
-
+function selectedMonthKey(){
+  if(selectedKey)return String(selectedKey);
+  if(DATA&&DATA.monthly&&DATA.monthly.length)return String(DATA.monthly[0].key||DATA.monthly[0].month||'');
+  return '';
+}
+function selectedMonthLabel(){
+  const k=selectedMonthKey();
+  const m=DATA&&DATA.monthly?(DATA.monthly.find(x=>String(x.key||x.month)===k)):null;
+  return m?.label||k||'Selected month';
+}
+function meetingMonthKey(v){
+  if(!v)return '';
+  const d=new Date(v);
+  if(!isNaN(d))return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
+  const s=String(v).trim();
+  const m=s.match(/^(\d{4})[-\/]([0-9]{1,2})/);
+  return m?m[1]+'-'+String(m[2]).padStart(2,'0'):'';
+}
+function meetingDateValue(v){
+  const d=new Date(v); return isNaN(d)?0:d.getTime();
+}
+function selectedMonthMeetings(){
+  const k=selectedMonthKey();
+  return minutesRows().filter(x=>meetingMonthKey(x.meetingDate||x.MeetingDate)===k);
+}
+function groupedSelectedMeetings(){
+  const grouped={};
+  selectedMonthMeetings().forEach(x=>{
+    const date=String(x.meetingDate||x.MeetingDate||'').trim();
+    if(!date)return;
+    const title=String(x.title||x.Title||'Meeting').trim()||'Meeting';
+    const key=date+'|'+title;
+    (grouped[key]??=[]).push(x);
+  });
+  return Object.values(grouped).sort((a,b)=>meetingDateValue(b[0].meetingDate||b[0].MeetingDate)-meetingDateValue(a[0].meetingDate||a[0].MeetingDate));
+}
+function pendingReminderRows(){
+  const k=selectedMonthKey();
+  return reminderRows().filter(x=>{
+    const month=String(x.month||x.Month||'');
+    const status=String(x.sheetStatus??x.status??'').trim().toLowerCase();
+    return month===k && status==='pending';
+  });
+}
 function showUpcomingUpdates(scroll=true){ currentView='upcoming';
   document.getElementById('title').textContent='Upcoming Updates';
   document.getElementById('subtitle').textContent='Meetings, occasions, notices and community announcements';
@@ -330,20 +373,14 @@ function showUpcomingUpdates(scroll=true){ currentView='upcoming';
   if(scroll)window.scrollTo({top:0,behavior:'smooth'});
 }
 function showMeetingMinutes(scroll=true){ currentView='minutes';
+  const month=selectedMonthLabel();
   document.getElementById('title').textContent='Meeting Minutes';
-  document.getElementById('subtitle').textContent='Date-wise minutes of held meetings';
-  const grouped={};
-  minutesRows().forEach(x=>{
-    const date=String(x.meetingDate||x.MeetingDate||'').trim();
-    if(!date)return;
-    const key=date+'|'+String(x.title||x.Title||'Meeting');
-    (grouped[key]??=[]).push(x);
-  });
-  const groups=Object.values(grouped).sort((a,b)=>new Date(b[0].meetingDate||b[0].MeetingDate)-new Date(a[0].meetingDate||a[0].MeetingDate));
+  document.getElementById('subtitle').textContent=month+' · latest meetings first';
+  const groups=groupedSelectedMeetings();
   document.getElementById('content').innerHTML=`<div class="detailView">
-    <div class="detailHead"><button class="backBtn" onclick="returnHome()">← Dashboard</button><div class="detailTitle"><h3>Meeting Minutes</h3><p>Click any meeting date to view the discussion pointers and decisions</p></div></div>
-    <div class="communityCard"><div class="communityHead purple"><span>📝 Held Meetings</span><small>${groups.length} meeting${groups.length===1?'':'s'}</small></div><div class="communityList">
-    ${groups.length?groups.map((g,i)=>{const first=g[0];return `<div class="communityItem" onclick="openMinutes(${i})"><div class="communityDate">${esc(formatFullDate(first.meetingDate||first.MeetingDate))}${first.meetingTime||first.MeetingTime?' · '+esc(first.meetingTime||first.MeetingTime):''}</div><div class="communityTitle">${esc(first.title||first.Title||'Meeting')}</div><div class="communityDesc">${g.length} pointer${g.length===1?'':'s'} · Click to view minutes →</div></div>`}).join(''):'<div class="empty">No meeting minutes have been added.</div>'}
+    <div class="detailHead"><button class="backBtn" onclick="returnHome()">← Dashboard</button><div class="detailTitle"><h3>Meeting Minutes — ${esc(month)}</h3><p>All meetings for the selected month. Click a meeting date to view every pointer and decision.</p></div></div>
+    <div class="communityCard"><div class="communityHead purple"><span>📝 ${esc(month)}</span><small>${groups.length} meeting${groups.length===1?'':'s'}</small></div><div class="communityList">
+    ${groups.length?groups.map((g,i)=>{const first=g[0];return `<div class="communityItem" onclick="openMinutes(${i})"><div class="communityDate">${esc(formatFullDate(first.meetingDate||first.MeetingDate))}${first.meetingTime||first.MeetingTime?' · '+esc(first.meetingTime||first.MeetingTime):''}</div><div class="communityTitle">${esc(first.title||first.Title||'Meeting')}</div><div class="communityDesc">${g.length} pointer${g.length===1?'':'s'} · Click to view full minutes →</div></div>`}).join(''):'<div class="empty">No meeting minutes have been added for '+esc(month)+'.</div>'}
     </div></div></div>
     <div id="minutesModal" class="minutesModal" onclick="if(event.target===this)closeMinutes()"><div class="minutesBox"><div class="minutesBoxHead"><div><h3 id="minutesModalTitle"></h3><p id="minutesModalMeta"></p></div><button class="closeMinutes" onclick="closeMinutes()">Close</button></div><div id="minutesModalBody" class="minutesBody"></div></div></div>`;
   window._minutesGroups=groups;
@@ -354,29 +391,30 @@ function openMinutes(index){
   const first=g[0];
   document.getElementById('minutesModalTitle').textContent=first.title||first.Title||'Meeting Minutes';
   document.getElementById('minutesModalMeta').textContent=formatFullDate(first.meetingDate||first.MeetingDate)+(first.meetingTime||first.MeetingTime?' · '+(first.meetingTime||first.MeetingTime):'');
-  document.getElementById('minutesModalBody').innerHTML=g.sort((a,b)=>Number(a.pointerNo||a.PointerNo||0)-Number(b.pointerNo||b.PointerNo||0)).map((x,i)=>`<div class="minutePoint"><div class="minuteNo">${esc(x.pointerNo||x.PointerNo||i+1)}</div><div><h4>${esc(x.discussionPoint||x.DiscussionPoint||'Discussion point')}</h4>${x.decision||x.Decision?`<div class="decision">Decision: ${esc(x.decision||x.Decision)}</div>`:''}${x.attachmentLink||x.AttachmentLink?`<div style="margin-top:6px"><a class="docBtn" href="${esc(x.attachmentLink||x.AttachmentLink)}" target="_blank" rel="noopener">📎 Attachment</a></div>`:''}</div></div>`).join('');
+  const sorted=[...g].sort((a,b)=>Number(a.pointerNo||a.PointerNo||0)-Number(b.pointerNo||b.PointerNo||0));
+  document.getElementById('minutesModalBody').innerHTML=sorted.map((x,i)=>`<div class="minutePoint"><div class="minuteNo">${esc(x.pointerNo||x.PointerNo||i+1)}</div><div><h4>${esc(x.discussionPoint||x.DiscussionPoint||'Discussion point')}</h4>${x.decision||x.Decision?`<div class="decision">Decision: ${esc(x.decision||x.Decision)}</div>`:''}${x.attachmentLink||x.AttachmentLink?`<div style="margin-top:6px"><a class="docBtn" href="${esc(x.attachmentLink||x.AttachmentLink)}" target="_blank" rel="noopener">📎 Attachment</a></div>`:''}</div></div>`).join('');
   document.getElementById('minutesModal').classList.add('open');
 }
 function closeMinutes(){const x=document.getElementById('minutesModal');if(x)x.classList.remove('open')}
 function showMaintenanceReminders(scroll=true){ currentView='reminders';
+  const month=selectedMonthLabel();
   document.getElementById('title').textContent='Maintenance Reminders';
-  document.getElementById('subtitle').textContent='Monthly reminder remains active from the 1st until payment is cleared';
-  const rows=reminderRows();
+  document.getElementById('subtitle').textContent=month+' · MonthlyMaintenance Column G = Pending';
+  const rows=pendingReminderRows();
   document.getElementById('content').innerHTML=`<div class="detailView">
-    <div class="detailHead"><button class="backBtn" onclick="returnHome()">← Dashboard</button><div class="detailTitle"><h3>Maintenance Reminders</h3><p>Automatic monthly reminders based on current payment status</p></div></div>
-    ${rows.length?rows.map(x=>`<div class="reminderBanner ${Number(x.balance||0)<=0?'reminderOk':''}"><div class="reminderIcon">${Number(x.balance||0)>0?'🔔':'✅'}</div><div class="reminderText"><b>${Number(x.balance||0)>0?esc(x.unit||'Unit')+' · '+esc(x.monthLabel||x.month||'Current month')+' maintenance pending':esc(x.unit||'Unit')+' · maintenance paid'}</b><span>${Number(x.balance||0)>0?money(x.balance)+' remaining · Reminder active since the 1st of the month':'Payment received in full · No further reminder required'}</span></div></div>`).join(''):'<div class="empty">No maintenance reminder data is available.</div>'}
+    <div class="detailHead"><button class="backBtn" onclick="returnHome()">← Dashboard</button><div class="detailTitle"><h3>Maintenance Reminders — ${esc(month)}</h3><p>Only rows whose <b>MonthlyMaintenance column G</b> is exactly <b>Pending</b> are shown.</p></div></div>
+    ${rows.length?rows.map(x=>`<div class="reminderBanner"><div class="reminderIcon">🔔</div><div class="reminderText"><b>${esc(x.unit||'Unit')} · ${esc(month)}</b><span>${money(x.balance)} remaining · Status: Pending</span></div></div>`).join(''):'<div class="empty">No Pending maintenance records in MonthlyMaintenance column G for '+esc(month)+'.</div>'}
   </div>`;
   if(scroll)window.scrollTo({top:0,behavior:'smooth'});
 }
 function communityHome(){
-  const updates=updateRows().filter(x=>{const d=new Date(x.date||x.Date);return !isNaN(d)&&d>=new Date(new Date().setHours(0,0,0,0))}).sort((a,b)=>new Date(a.date||a.Date)-new Date(b.date||b.Date)).slice(0,3);
-  const mr=reminderRows().filter(x=>Number(x.balance||0)>0);
-  const grouped={}; minutesRows().forEach(x=>{const k=String(x.meetingDate||x.MeetingDate||'');if(k)grouped[k]=true});
-  const recentMinutes=Object.keys(grouped).sort((a,b)=>new Date(b)-new Date(a)).slice(0,3);
+  const groups=groupedSelectedMeetings();
+  const latestMeetings=groups.slice(0,2);
+  const mr=pendingReminderRows();
   return `<div class="communitySection"><div class="communityGrid">
-    <div class="communityCard"><div class="communityHead blue"><span>📢 Upcoming Updates</span><small>${updates.length}</small></div><div class="communityList">${updates.length?updates.map(x=>`<div class="communityItem" onclick="showUpcomingUpdates()"><div class="communityDate">${esc(formatFullDate(x.date||x.Date))}${x.time?' · '+esc(x.time):''}</div><div class="communityTitle">${esc(x.title||x.Title||'Update')}</div><div class="communityDesc">${esc(x.description||x.Description||'')}</div></div>`).join(''):'<div class="empty">No upcoming updates.</div>'}</div></div>
-    <div class="communityCard"><div class="communityHead purple"><span>📝 Meeting Minutes</span><small>${recentMinutes.length}</small></div><div class="communityList">${recentMinutes.length?recentMinutes.map(d=>`<div class="communityItem" onclick="showMeetingMinutes()"><div class="communityDate">${esc(formatFullDate(d))}</div><div class="communityTitle">Meeting minutes available</div><div class="communityDesc">Click to view the date-wise pointers →</div></div>`).join(''):'<div class="empty">No minutes posted.</div>'}</div></div>
-    <div class="communityCard"><div class="communityHead orange"><span>🔔 Maintenance</span><small>${mr.length} pending</small></div><div class="communityList">${mr.length?mr.slice(0,3).map(x=>`<div class="communityItem" onclick="showMaintenanceReminders()"><div class="communityDate">${esc(x.unit||'Unit')} · ${esc(x.monthLabel||x.month||'Current month')}</div><div class="communityTitle">₹${Number(x.balance||0).toLocaleString('en-IN')} pending</div><div class="communityDesc">Reminder active from the 1st until payment</div></div>`).join(''):'<div class="empty">All current maintenance payments are clear.</div>'}</div></div>
+    <div class="communityCard"><div class="communityHead blue"><span>📢 Upcoming Updates</span><small>${updateRows().filter(x=>{const d=new Date(x.date||x.Date);return !isNaN(d)&&d>=new Date(new Date().setHours(0,0,0,0))}).length}</small></div><div class="communityList"><div class="communityItem" onclick="showUpcomingUpdates()"><div class="communityTitle">View upcoming meetings, occasions & notices →</div><div class="communityDesc">Open the complete community updates list.</div></div></div></div>
+    <div class="communityCard"><div class="communityHead purple"><span>📝 Meeting Minutes — ${esc(selectedMonthLabel())}</span><small>${latestMeetings.length}/2 shown</small></div><div class="communityList">${latestMeetings.length?latestMeetings.map((g,i)=>{const first=g[0];return `<div class="communityItem" onclick="showMeetingMinutes()"><div class="communityDate">${esc(formatFullDate(first.meetingDate||first.MeetingDate))}${first.meetingTime||first.MeetingTime?' · '+esc(first.meetingTime||first.MeetingTime):''}</div><div class="communityTitle">${esc(first.title||first.Title||'Meeting')}</div><div class="communityDesc">${g.length} pointer${g.length===1?'':'s'} · Click to view all ${esc(selectedMonthLabel())} meetings →</div></div>`}).join(''):'<div class="empty">No meetings for '+esc(selectedMonthLabel())+'.</div>'}</div></div>
+    <div class="communityCard"><div class="communityHead orange"><span>🔔 Maintenance — ${esc(selectedMonthLabel())}</span><small>${mr.length} pending</small></div><div class="communityList">${mr.length?mr.slice(0,3).map(x=>`<div class="communityItem" onclick="showMaintenanceReminders()"><div class="communityDate">${esc(x.unit||'Unit')}</div><div class="communityTitle">₹${Number(x.balance||0).toLocaleString('en-IN')} pending</div><div class="communityDesc">MonthlyMaintenance Column G = Pending → view details</div></div>`).join(''):'<div class="empty">No Pending records in MonthlyMaintenance column G.</div>'}</div></div>
   </div></div>`;
 }
 function returnHome(){selectedYear='';if(DATA&&DATA.monthly&&DATA.monthly.length){selectedKey=DATA.monthly[0].key;render(DATA.monthly[0])}else{document.getElementById('title').textContent='Building Passbook';document.getElementById('subtitle').textContent='No monthly data available';document.getElementById('content').innerHTML='<div class="empty">No monthly data found.</div>'}}
